@@ -57,48 +57,26 @@
 ## 6. Features Breakdown
 
 ### Tier 1: Core Functionality (MVP)
-* **📸 Symptom Photo Upload:** Cloudinary integration for image hosting.
-* **📝 Symptom NLP Input:** Text area for detailed descriptions.
-* **🧠 AI Diagnosis Suggestions:** Claude API integration returning structured JSON (Condition, Confidence Level, Explanation).
-* **📋 Condition Report Generation:** Clean UI presenting the AI's findings.
-* **💊 Medicine Information:** Displaying generic OTC medicine classes relevant to the symptoms with reference images.
-* **⚠️ Disclaimer Implementation:** Hardcoded, un-dismissible legal disclaimers.
+* ** Symptom Photo Upload:** Cloudinary integration for image hosting.
+* ** Symptom NLP Input:** Text area for detailed descriptions.
+* ** AI Diagnosis Suggestions:** Claude API integration returning structured JSON (Condition, Confidence Level, Explanation).
+* ** Condition Report Generation:** Clean UI presenting the AI's findings.
+* ** Medicine Information:** Displaying generic OTC medicine classes relevant to the symptoms with reference images.
+* ** Disclaimer Implementation:** Hardcoded, un-dismissible legal disclaimers.
 
 ### Tier 2: Standout Differentiators
-* **🔐 Auth + Personal Health Profile:** Persistent user sessions and profile management.
-* **🔴 Emergency Severity Classifier:** Conditional UI red-alerts indicating severe conditions and displaying local emergency numbers (e.g., 108 in India).
-* **💊 Drug Interaction Checker:** Pre-analysis check analyzing profile medications against recommended OTCs.
-* **📍 Nearby Doctor/Hospital Finder:** Google Maps integration fetching clinics based on the user's geolocation and the AI's suggested medical specialty.
-* **📄 PDF Report Export:** Client-side PDF generation using jsPDF for easy sharing.
+* ** Auth + Personal Health Profile:** Persistent user sessions and profile management.
+* ** Emergency Severity Classifier:** Conditional UI red-alerts indicating severe conditions and displaying local emergency numbers (e.g., 108 in India).
+* **Drug Interaction Checker:** Pre-analysis check analyzing profile medications against recommended OTCs.
+* ** Nearby Doctor/Hospital Finder:** Google Maps integration fetching clinics based on the user's geolocation and the AI's suggested medical specialty.
+* ** PDF Report Export:** Client-side PDF generation using jsPDF for easy sharing.
 
 ### Tier 3: Advanced UX & Accessibility
-* **🗣️ Voice Symptom Input:** Web Speech API integration for dictation.
-* **🌍 Multi-language Support:** i18n implementation utilizing Claude to translate medical jargon into Hindi, Bengali, Tamil, etc.
-* **📊 Health Dashboard & History:** Visual charts (using Chart.js/Recharts) tracking symptom recurrence and profile history over time.
-* **🤖 Medical Chatbot:** A persistent chat window maintaining the context of the generated report for user Q&A.
-* **📅 Mock Appointment Booking:** UI component simulating a Calendly-style booking system for the suggested specialists.
+* ** Voice Symptom Input:** Web Speech API integration for dictation.
+* ** Multi-language Support:** i18n implementation utilizing Claude to translate medical jargon into Hindi, Bengali, Tamil, etc.
+* ** Health Dashboard & History:** Visual charts (using Chart.js/Recharts) tracking symptom recurrence and profile history over time.
+* ** Medical Chatbot:** A persistent chat window maintaining the context of the generated report for user Q&A.
+* ** Mock Appointment Booking:** UI component simulating a Calendly-style booking system for the suggested specialists.
 
 ---
 
-## 7. Step-by-Step Implementation Plan
-
-### Phase 1: Foundation & MVP (Weeks 1-2)
-1. Initialize Next.js project with Tailwind CSS.
-2. Setup PostgreSQL database and Prisma schema (Users, Profiles, Reports).
-3. Implement Authentication (Clerk).
-4. Build the core input UI (Text area + File upload for Images).
-5. Setup Cloudinary for image uploads and setup Claude API backend route.
-6. Display the AI response in a simple report UI with strict disclaimers.
-
-### Phase 2: Standout Features (Weeks 3-4)
-7. Build the Personal Health Profile page and link it to the Claude API prompt context.
-8. Implement the Emergency Severity detection logic in the prompt.
-9. Integrate Google Maps API to show related nearby hospitals/doctors.
-10. Add the PDF Export functionality (jsPDF) to the report page.
-
-### Phase 3: Polish & Advanced Features (Weeks 5-6)
-11. Build the User Dashboard with historical charts fetching Prisma data.
-12. Integrate the Web Speech API for the Voice Input feature.
-13. Implement Multi-language selection and prompt contextualization.
-14. Add the contextual Medical Chatbot interface on the report page.
-15. Final UI/UX styling, empty states, loading skeletons, and responsive testing.
