@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AlertTriangle, Home, Activity, ShieldAlert, Pill, FileText, Stethoscope } from 'lucide-react'
 import { DownloadPdfButton } from './DownloadPdfButton'
+import { NearbyClinicsMap } from './NearbyClinicsMap'
 
 export default async function ReportPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
@@ -146,6 +147,9 @@ export default async function ReportPage(props: { params: Promise<{ id: string }
             </div>
           </div>
         </div>
+
+        {/* Dynamic Map Component */}
+        <NearbyClinicsMap />
 
         {/* Disclaimer */}
         <div className="bg-amber-50 rounded-3xl p-8 border border-amber-200 shadow-sm relative overflow-hidden">
