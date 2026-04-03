@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AlertTriangle, Home, Activity, ShieldAlert, Pill, FileText, Stethoscope } from 'lucide-react'
+import { DownloadPdfButton } from './DownloadPdfButton'
 
 export default async function ReportPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
@@ -55,10 +56,13 @@ export default async function ReportPage(props: { params: Promise<{ id: string }
             </h1>
             <p className="text-slate-500 mt-2 font-medium">Generated on {new Date(report.created_at).toLocaleDateString()} at {new Date(report.created_at).toLocaleTimeString()}</p>
           </div>
-          <Link href="/dashboard" className="px-5 py-2.5 flex items-center bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-700 font-medium rounded-xl shadow-sm transition-all focus:ring-4 focus:ring-blue-100">
-            <Home className="w-4 h-4 mr-2 text-blue-600" />
-            Dashboard
-          </Link>
+          <div className="flex gap-3 print:hidden">
+            <Link href="/dashboard" className="px-5 py-2.5 flex items-center bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-700 font-medium rounded-xl shadow-sm transition-all focus:ring-4 focus:ring-blue-100 hidden sm:flex">
+              <Home className="w-4 h-4 mr-2 text-blue-600" />
+              Dashboard
+            </Link>
+            <DownloadPdfButton />
+          </div>
         </div>
 
         {/* Emergency Banner */}
@@ -74,8 +78,8 @@ export default async function ReportPage(props: { params: Promise<{ id: string }
           </div>
         )}
 
-        {/* Main Card */}
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden mb-10">
+        {/* Main Card (This will be downloaded) */}
+        <div id="report-content" className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden mb-10 pt-2 pb-2">
           
           <div className="border-b border-slate-100 bg-slate-50/80 p-6 md:p-8 flex items-center justify-between">
             <div className="flex items-center">

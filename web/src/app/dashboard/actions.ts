@@ -47,10 +47,25 @@ export async function analyzeSymptoms(formData: FormData) {
   }
 
   // 2. Call Gemini API
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+  
+  let profileContext = ''
+  if (profile && (profile.age || profile.blood_group || profile.allergies || profile.medical_history)) {
+    profileContext = `
+    -- PATIENT HEALTH PROFILE --
+    Age: ${profile.age || 'Not specified'}
+    Blood Group: ${profile.blood_group || 'Not specified'}
+    Known Allergies: ${profile.allergies || 'None specified'}
+    Chronic Medical History: ${profile.medical_history || 'None specified'}
+    
+    CRITICAL INSTRUCTION: You MUST carefully consider this Patient Health Profile when forming your explanation and recommending OTC medications. If they have an allergy or a chronic history that interacts with their symptoms or your recommended OTC, you MUST mention it explicitly in the explanation.`
+  }
+
   const prompt = `
   You are an AI medical assistant. A user has reported the following symptoms:
   Symptoms: "${symptoms}"
   ${medications ? `Current Medications: "${medications}"` : ''}
+  ${profileContext}
 
   Please analyze these symptoms and any attached image.
   
@@ -98,19 +113,35 @@ export async function analyzeSymptoms(formData: FormData) {
 
     const responseText = response.text
     if (responseText) {
-      aiResponse = JSON.parse(responseText)
-      isEmergency = aiResponse.isEmergency || false
+      // Clean up markdown code blocks if the AI accidentally included them
+      const cleanedText = responseText.replace(/```json/g, '').replace(/```/g, '').trim()
+      aiResponse = JSON.parse(cleanedText)
+      isEmergency = aiResponse?.isEmergency || false
+    } else {
+      throw new Error("Empty response from AI")
     }
   } catch (error) {
     console.error('Gemini API Error:', error)
-    // Fallback if AI fails
+    // Fallback if AI fails (Safety filter, network, or parsing error)
     aiResponse = {
-      condition: "Error Analyzing",
+      condition: "Analysis Blocked or Failed",
       confidenceLevel: "Low",
-      explanation: "We could not process the medical report at this time.",
+      explanation: "We could not process the medical report. This often happens if the uploaded image is blurry, or if the AI safety filters incorrectly flagged the image or text.",
       isEmergency: false,
       otcMedicineAdvice: "None",
-      recommendation: "Please consult a doctor or try again later."
+      recommendation: "Please try describing your symptoms differently, taking a clearer photo, or consult a doctor directly."
+    }
+  }
+
+  // Double check fallback to absolutely prevent database NOT NULL constraint errors
+  if (!aiResponse) {
+    aiResponse = {
+      condition: "Error",
+      confidenceLevel: "Low",
+      explanation: "Unknown AI Error.",
+      isEmergency: false,
+      otcMedicineAdvice: "None",
+      recommendation: "Please try again."
     }
   }
 
