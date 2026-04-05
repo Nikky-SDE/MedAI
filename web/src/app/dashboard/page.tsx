@@ -6,6 +6,7 @@ import { analyzeSymptoms } from './actions'
 import { SubmitButton } from './SubmitButton'
 import { ImageUpload } from './ImageUpload'
 import { ReportHistory } from './ReportHistory'
+import { SymptomInput } from './SymptomInput'
 
 export default async function DashboardPage({
   searchParams,
@@ -59,14 +60,7 @@ export default async function DashboardPage({
             <label htmlFor="symptoms" className="block text-lg font-semibold text-slate-800">
               How are you feeling today?
             </label>
-            <textarea
-              id="symptoms"
-              name="symptoms"
-              rows={5}
-              required
-              className="w-full rounded-xl border border-slate-300 p-4 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none resize-none shadow-sm"
-              placeholder="E.g., I have had a persistent headache for the last 2 days accompanied by mild nausea..."
-            ></textarea>
+            <SymptomInput />
           </div>
 
           <div className="space-y-3">
