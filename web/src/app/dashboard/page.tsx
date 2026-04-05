@@ -5,6 +5,7 @@ import { User, ShieldAlert } from 'lucide-react'
 import { analyzeSymptoms } from './actions'
 import { SubmitButton } from './SubmitButton'
 import { ImageUpload } from './ImageUpload'
+import { ReportHistory } from './ReportHistory'
 
 export default async function DashboardPage({
   searchParams,
@@ -20,6 +21,13 @@ export default async function DashboardPage({
   if (!user) {
     redirect('/login')
   }
+
+  // Fetch Historical Reports
+  const { data: reports } = await supabase
+    .from('reports')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
 
   return (
     <div className="max-w-4xl mx-auto p-6 md:p-10 mb-20 font-sans">
@@ -86,6 +94,9 @@ export default async function DashboardPage({
           </div>
         </form>
       </div>
+
+      {/* Interactive History Toggle Component */}
+      <ReportHistory reports={reports || []} />
     </div>
   )
 }
