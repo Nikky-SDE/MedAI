@@ -48,7 +48,7 @@ export async function analyzeSymptoms(formData: FormData) {
 
   // 2. Call Gemini API
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-  
+
   let profileContext = ''
   if (profile && (profile.age || profile.blood_group || profile.allergies || profile.medical_history)) {
     profileContext = `
@@ -102,7 +102,7 @@ export async function analyzeSymptoms(formData: FormData) {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.0-flash',
       contents: [
         {
           role: 'user',

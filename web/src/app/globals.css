@@ -1,5 +1,214 @@
 @import "tailwindcss";
 
+
+/* ===================== */
+/* CSS Custom Properties */
+/* ===================== */
+:root {
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  /* Rose Gold + Navy palette from MedAI logo */
+  --rose-gold: #C8856A;
+  --rose-gold-light: #E8A98B;
+  --navy: #1B2A6B;
+  --navy-light: #2D4499;
+
+  /* Light mode tokens */
+  --bg: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #F1F5F9;
+  --border: #E2E8F0;
+  --border-subtle: rgba(0,0,0,0.06);
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+
+  /* Accent */
+  --accent-from: #C8856A;
+  --accent-to: #1B2A6B;
+  --accent-bar-from: #F87171;
+  --accent-bar-to: #FBBF24;
+}
+
+.dark {
+  --bg: #09090F;
+  --bg-card: #13131F;
+  --bg-sidebar: #0F0F1A;
+  --border: rgba(255,255,255,0.08);
+  --border-subtle: rgba(255,255,255,0.05);
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  --accent-bar-from: #6366F1;
+  --accent-bar-to: #22D3EE;
+}
+
+/* ===== Base ===== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ===== Glass Utility ===== */
+.glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.glass-light {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* ===== Gradient Text ===== */
+.gradient-text {
+  background: linear-gradient(135deg, var(--rose-gold) 0%, var(--navy) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-light {
+  background: linear-gradient(135deg, #C8856A 0%, #E8A98B 50%, #2D4499 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Animations ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes blob {
+  0%, 100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; }
+  25% { border-radius: 40% 60% 30% 70% / 60% 40% 60% 40%; }
+  50% { border-radius: 70% 30% 40% 60% / 30% 70% 30% 70%; }
+  75% { border-radius: 30% 70% 60% 40% / 70% 30% 70% 30%; }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(200, 133, 106, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(200, 133, 106, 0.6), 0 0 80px rgba(45, 68, 153, 0.2); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-blob { animation: blob 8s ease-in-out infinite; }
+.animate-glow { animation: glow-pulse 3s ease-in-out infinite; }
+.animate-slide-up { animation: slide-up 0.4s ease forwards; }
+.animate-fade-in { animation: fade-in 0.3s ease forwards; }
+
+/* ===== Gradient Backgrounds ===== */
+.hero-gradient-light {
+  background: radial-gradient(ellipse at 70% 50%, rgba(200, 133, 106, 0.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 30% 80%, rgba(45, 68, 153, 0.10) 0%, transparent 50%),
+              linear-gradient(160deg, #EEF0FF 0%, #F8FAFC 50%, #FFF5F2 100%);
+}
+.hero-gradient-dark {
+  background: radial-gradient(ellipse at 70% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 30% 80%, rgba(200, 133, 106, 0.08) 0%, transparent 50%),
+              linear-gradient(160deg, #09090F 0%, #0F0F1A 100%);
+}
+
+/* ===== AI Orb ===== */
+.ai-orb {
+  animation: blob 8s ease-in-out infinite, glow-pulse 3s ease-in-out infinite;
+  background: linear-gradient(135deg, #C8856A, #E8A98B, #2D4499, #6366F1);
+  background-size: 300% 300%;
+}
+.dark .ai-orb {
+  background: linear-gradient(135deg, #6366F1, #22D3EE, #C8856A, #E8A98B);
+  background-size: 300% 300%;
+}
+
+/* ===== Confidence Bar ===== */
+.confidence-bar {
+  background: linear-gradient(90deg, var(--accent-bar-from), var(--accent-bar-to));
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Card transitions ===== */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+.dark .card-hover:hover {
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+/* ===== Input focus ring ===== */
+.input-focus {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-focus:focus {
+  outline: none;
+  border-color: #C8856A;
+  box-shadow: 0 0 0 3px rgba(200, 133, 106, 0.15);
+}
+.dark .input-focus:focus {
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* ===== Gradient Button ===== */
+.btn-gradient {
+  background: linear-gradient(135deg, #C8856A 0%, #1B2A6B 100%);
+  color: white;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.btn-gradient:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-gradient:active { transform: translateY(0); }
+
+/* ===== Mic button listening state ===== */
+.mic-listening {
+  background: #22D3EE !important;
+  color: white !important;
+  animation: glow-pulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.25);
+}
+
+/* ===== Message bubbles ===== */
+.message-user {
+  background: linear-gradient(135deg, #C8856A, #1B2A6B);
+  color: white;
+  border-radius: 18px 18px 4px 18px;
+}
+.message-ai {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px 18px 18px 4px;
+  color: var(--text-primary);
 }

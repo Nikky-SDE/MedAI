@@ -3,80 +3,78 @@
 import { useState, useRef } from 'react'
 import { analyzeSymptoms } from './actions'
 import { ImageUpload } from './ImageUpload'
-import { SymptomInput } from './SymptomInput'
-import { Bot, Activity } from 'lucide-react'
+import { Activity, ArrowUp, Paperclip } from 'lucide-react'
+import { t, getSuggestions, Language } from '@/lib/i18n'
+import { MicButton } from './MicButton'
 
-export function TriageForm() {
+interface TriageFormProps {
+  language: Language
+}
+
+export function TriageForm({ language }: TriageFormProps) {
   const [turnCount, setTurnCount] = useState(0)
   const [confidenceScore, setConfidenceScore] = useState(0)
-  const [currentQuestion, setCurrentQuestion] = useState("How are you feeling today?")
-  const [messages, setMessages] = useState<{role: string, text: string}[]>([])
-  
+  const [currentQuestion, setCurrentQuestion] = useState('')
+  const [messages, setMessages] = useState<{ role: string; text: string }[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isTriaging, setIsTriaging] = useState(false)
   const [isDone, setIsDone] = useState(false)
-  
+  const [showImageUpload, setShowImageUpload] = useState(false)
+
   const formRef = useRef<HTMLFormElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   const handleTriageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // If the loop is finished, allow the native server action to run
-    if (isDone) return; 
-
-    e.preventDefault();
-    if (!inputValue.trim()) return;
+    if (isDone) return
+    e.preventDefault()
+    if (!inputValue.trim()) return
 
     setIsTriaging(true)
-
     const userMessage = { role: 'user', text: inputValue }
     const updatedMessages = [...messages, userMessage]
     setMessages(updatedMessages)
+    setInputValue('')
+    setTimeout(scrollToBottom, 50)
 
     try {
       const res = await fetch('/api/triage', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Ensure Supabase Auth cookies securely travel with the request
-        body: JSON.stringify({ messages: updatedMessages }),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ messages: updatedMessages, language }),
       })
 
-      // Check if Next.js accidentally returned an HTML redirect or 404 page (Turbopack bug)
-      const contentType = res.headers.get("content-type");
-      if (res.ok && contentType && contentType.indexOf("application/json") !== -1) {
+      const contentType = res.headers.get('content-type')
+      if (res.ok && contentType?.includes('application/json')) {
         const data = await res.json()
         const newScore = data.confidenceScore || confidenceScore
         setConfidenceScore(newScore)
-        
+
         const nextTurn = turnCount + 1
         setTurnCount(nextTurn)
 
-        // The Triggers: Exit loop if confidence >= 85 or we hit 3 follow-ups
         if (newScore >= 85 || nextTurn >= 3) {
           setIsDone(true)
-          setCurrentQuestion("Triage Complete. Compiling final diagnostic report...")
-          
-          // Yield to let React re-render, then programmatically submit the form
-          setTimeout(() => {
-            if (formRef.current) {
-              formRef.current.requestSubmit()
-            }
-          }, 300)
+          setCurrentQuestion(t('triage_complete', language))
+          const doneMsg = { role: 'ai', text: t('triage_complete', language) }
+          setMessages([...updatedMessages, doneMsg])
+          setTimeout(() => formRef.current?.requestSubmit(), 600)
         } else {
-          // Continue loop
-          const aiQuestion = data.next_question || "Can you provide a bit more detail?"
+          const aiQuestion = data.next_question || t('greeting', language)
           setCurrentQuestion(aiQuestion)
-          setMessages([...updatedMessages, { role: 'ai', text: aiQuestion }])
-          setInputValue('') 
+          const aiMsg = { role: 'ai', text: aiQuestion }
+          setMessages([...updatedMessages, aiMsg])
+          setTimeout(scrollToBottom, 50)
         }
       } else {
-        // If it's an HTML page or 500 error, skip the triage and jump directly to the final report!
-        console.warn("Triage API unavailable or returned HTML, safely bypassing...")
         setIsDone(true)
         setTimeout(() => formRef.current?.requestSubmit(), 300)
       }
-    } catch (err) {
-      console.error(err)
+    } catch {
       setIsDone(true)
       setTimeout(() => formRef.current?.requestSubmit(), 300)
     } finally {
@@ -84,76 +82,167 @@ export function TriageForm() {
     }
   }
 
-  // Compile the context for the backend `analyzeSymptoms` action once the loop closes
-  const compiledSymptoms = messages.map(m => `[${m.role.toUpperCase()}]: ${m.text}`).join('\n') + `\n[USER]: ${inputValue}`;
+  const compiledSymptoms =
+    messages.map(m => `[${m.role.toUpperCase()}]: ${m.text}`).join('\n') +
+    (inputValue ? `\n[USER]: ${inputValue}` : '')
+
+  const suggestions = getSuggestions(language)
+  const showSuggestions = messages.length === 0 && !inputValue
 
   return (
-    <form ref={formRef} action={analyzeSymptoms} onSubmit={handleTriageSubmit} className="space-y-8 flex flex-col">
+    <form ref={formRef} action={analyzeSymptoms} onSubmit={handleTriageSubmit} className="flex flex-col">
       <input type="hidden" name="symptoms" value={compiledSymptoms} />
+      <input type="hidden" name="language" value={language} />
 
-      {/* Dynamic Confidence Meter */}
-      <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-        <div className="flex justify-between items-center mb-3 relative z-10">
-          <span className="text-sm font-bold text-slate-700 flex items-center">
-            <Activity className="w-5 h-5 mr-2 text-indigo-600" />
-            Diagnostic Confidence
+      {/* ===== Confidence Meter ===== */}
+      <div className="px-6 pt-6 pb-4 border-b border-[var(--border)]">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-xs font-semibold text-[var(--text-secondary)] flex items-center gap-1.5 uppercase tracking-widest">
+            <Activity className="w-3.5 h-3.5" />
+            {t('confidence', language)}
           </span>
-          <span className="text-lg font-bold text-indigo-600">{confidenceScore}%</span>
+          <span className="text-sm font-bold" style={{ color: confidenceScore >= 85 ? '#22C55E' : confidenceScore >= 50 ? '#F59E0B' : '#C8856A' }}>
+            {confidenceScore}%
+          </span>
         </div>
-        <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden relative z-10">
-          <div 
-            className="bg-indigo-600 h-3 rounded-full transition-all duration-1000 ease-out" 
+        <div className="w-full bg-slate-100 dark:bg-white/8 rounded-full h-1.5 overflow-hidden">
+          <div
+            className="confidence-bar h-1.5 rounded-full"
             style={{ width: `${confidenceScore}%` }}
-          ></div>
+          />
         </div>
-        <div className="flex justify-between mt-3 text-xs text-slate-400 font-medium tracking-wide uppercase relative z-10">
-          <span>Triage Turn: {turnCount} / 3</span>
-          <span>Target: 85%</span>
+        <div className="flex justify-between mt-1.5 text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-medium">
+          <span>{t('triage_turn', language)}: {turnCount} / 3</span>
+          <span>{t('target', language)}: 85%</span>
         </div>
       </div>
 
-      <div className="space-y-3">
-        <label className="text-xl font-bold text-slate-800 flex items-start leading-tight">
-          <Bot className="w-7 h-7 mr-3 text-blue-500 flex-shrink-0 mt-0.5" />
-          {currentQuestion}
-        </label>
-        
-        <SymptomInput value={inputValue} onChange={setInputValue} disabled={isTriaging || isDone} />
-      </div>
+      {/* ===== Message History ===== */}
+      {messages.length > 0 && (
+        <div className="px-6 py-4 space-y-3 max-h-64 overflow-y-auto">
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}
+            >
+              <div
+                className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed ${
+                  msg.role === 'user' ? 'message-user' : 'message-ai'
+                }`}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          {isTriaging && (
+            <div className="flex justify-start">
+              <div className="message-ai px-4 py-3">
+                <div className="flex gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      )}
 
-      <div className={`space-y-3 transition-opacity duration-500 ${turnCount > 0 ? 'opacity-40 pointer-events-none hidden md:block' : 'opacity-100'}`}>
-        <label htmlFor="medications" className="block text-lg font-semibold text-slate-800">
-          Current Medications <span className="text-slate-400 font-normal text-sm block sm:inline sm:ml-2">(Optional)</span>
-        </label>
-        <input
-          id="medications"
-          name="medications"
-          type="text"
-          className="w-full rounded-xl border border-slate-300 p-4 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none shadow-sm"
-          placeholder="E.g., Ibuprofen, Vitamin D3..."
-          disabled={isTriaging || isDone}
-        />
-      </div>
+      {/* ===== Suggestion Chips ===== */}
+      {showSuggestions && (
+        <div className="px-6 pt-4 pb-2 flex flex-wrap gap-2">
+          {suggestions.map(chip => (
+            <button
+              key={chip}
+              type="button"
+              onClick={() => setInputValue(chip)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium border border-[var(--border)] text-[var(--text-secondary)] hover:border-[#C8856A] hover:text-[#C8856A] dark:hover:border-indigo-400 dark:hover:text-indigo-400 transition-all duration-150 bg-[var(--bg-sidebar)]"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+      )}
 
-      <div className={`space-y-3 transition-opacity duration-500 ${turnCount > 0 ? 'opacity-40 pointer-events-none hidden md:block' : 'opacity-100'}`}>
-        <label className="block text-lg font-semibold text-slate-800">
-          Upload a Photo <span className="text-slate-400 font-normal text-sm block sm:inline sm:ml-2">(e.g., skin rash, minor injury)</span>
-        </label>
-        <ImageUpload />
-      </div>
+      {/* ===== Image Upload (collapsible) ===== */}
+      {showImageUpload && (
+        <div className="px-6 py-3 border-t border-[var(--border)] animate-slide-up">
+          <ImageUpload />
+        </div>
+      )}
 
-      <div className="pt-6 border-t border-slate-100">
-        <button
-          type="submit"
-          disabled={isTriaging || isDone || !inputValue.trim()}
-          className={`w-full font-bold text-lg rounded-xl px-8 py-4 transition-all shadow-lg flex items-center justify-center ${
-            isTriaging || isDone || !inputValue.trim()
-              ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
-              : 'bg-indigo-600 hover:bg-indigo-700 text-white hover:shadow-xl hover:-translate-y-0.5'
-          }`}
-        >
-          {isDone ? 'Generating Final Report...' : isTriaging ? 'Processing Analysis...' : turnCount === 0 ? 'Start Diagnostic Triage' : 'Submit Answer'}
-        </button>
+      {/* ===== Medications (shown only on first turn) ===== */}
+      {turnCount === 0 && !isDone && (
+        <div className="px-6 py-3 border-t border-[var(--border)]">
+          <input
+            name="medications"
+            type="text"
+            className="w-full text-sm bg-transparent text-[var(--text-secondary)] placeholder:text-[var(--text-muted)] outline-none input-focus border border-[var(--border)] rounded-xl px-4 py-2.5"
+            placeholder={`💊 ${t('medications', language)} (${t('medications_placeholder', language)})`}
+            disabled={isTriaging || isDone}
+          />
+        </div>
+      )}
+
+      {/* ===== Bottom Input Bar ===== */}
+      <div className="px-4 py-4 border-t border-[var(--border)] bg-[var(--bg-card)]">
+        <div className="flex items-end gap-2 bg-[var(--bg-sidebar)] rounded-2xl border border-[var(--border)] px-3 py-2 focus-within:border-[#C8856A] dark:focus-within:border-indigo-500 transition-colors">
+
+          {/* Attach photo */}
+          <button
+            type="button"
+            onClick={() => setShowImageUpload(!showImageUpload)}
+            disabled={isDone || turnCount > 0}
+            className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-[var(--text-muted)] hover:text-[#C8856A] dark:hover:text-indigo-400 hover:bg-[var(--border)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Attach photo"
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
+
+          {/* Textarea */}
+          <textarea
+            id="symptom-input"
+            rows={1}
+            value={inputValue}
+            onChange={e => {
+              setInputValue(e.target.value)
+              e.target.style.height = 'auto'
+              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                formRef.current?.requestSubmit()
+              }
+            }}
+            disabled={isTriaging || isDone}
+            className="flex-1 bg-transparent resize-none outline-none text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] py-1.5 max-h-32 disabled:opacity-50"
+            placeholder={isDone ? t('generating_report', language) : t('placeholder', language)}
+            style={{ lineHeight: '1.5' }}
+          />
+
+          {/* Mic Button */}
+          <MicButton
+            value={inputValue}
+            onChange={setInputValue}
+            disabled={isTriaging || isDone}
+          />
+
+          {/* Send Button */}
+          <button
+            type="submit"
+            disabled={isTriaging || isDone || !inputValue.trim()}
+            className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center btn-gradient disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none shadow-md"
+            title="Send"
+          >
+            <ArrowUp className="w-4 h-4" />
+          </button>
+        </div>
+
+        <p className="text-center text-[10px] text-[var(--text-muted)] mt-2">
+          Press Enter to send · Shift+Enter for new line
+        </p>
       </div>
     </form>
   )
