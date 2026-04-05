@@ -2,11 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { User, ShieldAlert } from 'lucide-react'
-import { analyzeSymptoms } from './actions'
-import { SubmitButton } from './SubmitButton'
-import { ImageUpload } from './ImageUpload'
 import { ReportHistory } from './ReportHistory'
-import { SymptomInput } from './SymptomInput'
+import { TriageForm } from './TriageForm'
 
 export default async function DashboardPage({
   searchParams,
@@ -55,38 +52,7 @@ export default async function DashboardPage({
       </div>
 
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 p-8 sm:p-10">
-        <form action={analyzeSymptoms} className="space-y-8 flex flex-col">
-          <div className="space-y-3">
-            <label htmlFor="symptoms" className="block text-lg font-semibold text-slate-800">
-              How are you feeling today?
-            </label>
-            <SymptomInput />
-          </div>
-
-          <div className="space-y-3">
-            <label htmlFor="medications" className="block text-lg font-semibold text-slate-800">
-              Current Medications <span className="text-slate-400 font-normal text-sm block sm:inline sm:ml-2">(Optional)</span>
-            </label>
-            <input
-              id="medications"
-              name="medications"
-              type="text"
-              className="w-full rounded-xl border border-slate-300 p-4 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none shadow-sm"
-              placeholder="E.g., Ibuprofen, Vitamin D3..."
-            />
-          </div>
-
-          <div className="space-y-3">
-            <label className="block text-lg font-semibold text-slate-800">
-              Upload a Photo <span className="text-slate-400 font-normal text-sm block sm:inline sm:ml-2">(e.g., skin rash, minor injury)</span>
-            </label>
-            <ImageUpload />
-          </div>
-
-          <div className="pt-6 border-t border-slate-100">
-            <SubmitButton />
-          </div>
-        </form>
+        <TriageForm />
       </div>
 
       {/* Interactive History Toggle Component */}

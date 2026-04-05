@@ -4,9 +4,24 @@ import { cookies } from 'next/headers'
 export async function createClient() {
   const cookieStore = await cookies()
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl) {
+    throw new Error('Supabase URL is undefined in server environment. Check .env.local')
+  }
+  
+  if (!supabaseUrl.startsWith('https://')) {
+    throw new Error('Supabase URL must start with https://')
+  }
+
+  if (!supabaseKey) {
+    throw new Error('Supabase Anon Key is undefined in server environment. Check .env.local')
+  }
+
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {

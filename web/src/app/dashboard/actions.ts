@@ -7,8 +7,6 @@ import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from '@google/genai'
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
 export async function analyzeSymptoms(formData: FormData) {
-//....
-// I will just replace the safetySettings block directly since I know where it is exactly.
   const supabase = await createClient()
 
   const {
@@ -165,8 +163,9 @@ export async function analyzeSymptoms(formData: FormData) {
 
   if (dbError || !reportData) {
     console.error("Database Insert Error:", dbError)
-    // Just display a dummy report ID or handle error gracefully
-    redirect('/dashboard?error=Could not save report')
+    const errText = dbError ? dbError.message : "Empty report data returned from Supabase";
+    // Encode the exact raw string so it draws vividly on the frontend Next.js red banner
+    redirect(`/dashboard?error=${encodeURIComponent(`Supabase Insert Failed: ${errText}`)}`)
   }
 
   // 4. Redirect to Report page
