@@ -57,6 +57,7 @@ export function TriageForm({ language }: TriageFormProps) {
         const nextTurn = turnCount + 1
         setTurnCount(nextTurn)
 
+        // Stop after 3 follow-up questions to prevent an infinite loop, or if AI reaches high confidence
         if (newScore >= 85 || nextTurn >= 3) {
           setIsDone(true)
           setCurrentQuestion(t('triage_complete', language))

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark, .dark *));
 
 /* ===================== */
 /* CSS Custom Properties */
@@ -31,14 +32,14 @@
 }
 
 .dark {
-  --bg: #09090F;
-  --bg-card: #13131F;
-  --bg-sidebar: #0F0F1A;
-  --border: rgba(255,255,255,0.08);
-  --border-subtle: rgba(255,255,255,0.05);
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  --bg: #020205;
+  --bg-card: #08080F;
+  --bg-sidebar: #05050A;
+  --border: rgba(255,255,255,0.12);
+  --border-subtle: rgba(255,255,255,0.08);
+  --text-primary: #FFFFFF;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
 
   --accent-bar-from: #6366F1;
   --accent-bar-to: #22D3EE;

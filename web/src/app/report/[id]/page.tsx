@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { AlertTriangle, Home, Activity, ShieldAlert, Pill, FileText, Stethoscope, ArrowLeft } from 'lucide-react'
 import { DownloadPdfButton } from './DownloadPdfButton'
-import { NearbyClinicsMap } from './NearbyClinicsMap'
+import { MapLoader } from './MapLoader'
 import { ShareReportButtons } from './ShareReportButtons'
 import { Navbar } from '@/components/Navbar'
 
@@ -172,7 +172,7 @@ export default async function ReportPage(props: { params: Promise<{ id: string }
 
         {/* Map */}
         <div className="mb-8">
-          <NearbyClinicsMap />
+          <MapLoader />
         </div>
 
         {/* Disclaimer */}

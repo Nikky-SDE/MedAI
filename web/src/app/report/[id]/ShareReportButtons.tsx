@@ -92,11 +92,11 @@ export function ShareReportButtons({ reportId, isPublic, isOwner }: ShareReportB
         <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy Link'}</span>
       </button>
 
-      {/* WhatsApp - Only show if public */}
-      {isPublic && (
+      {/* WhatsApp - Show for owner always, or for anyone if public */}
+      {(isOwner || isPublic) && (
         <button
           onClick={shareWhatsApp}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-green-400 hover:text-green-600 dark:hover:text-green-400 transition-all duration-200"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border border-green-300 dark:border-green-500/30 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-500/20 hover:shadow-md transition-all duration-200"
           title="Share via WhatsApp"
         >
           <Share2 className="w-4 h-4" />
@@ -104,15 +104,17 @@ export function ShareReportButtons({ reportId, isPublic, isOwner }: ShareReportB
         </button>
       )}
 
-      {/* Email */}
-      <button
-        onClick={shareEmail}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:border-[#1B2A6B] hover:text-[#1B2A6B] dark:hover:border-indigo-400 dark:hover:text-indigo-400 transition-all duration-200"
-        title="Share via Email"
-      >
-        <Mail className="w-4 h-4" />
-        <span className="hidden sm:inline">Email</span>
-      </button>
+      {/* Email - Show for owner always, or for anyone if public */}
+      {(isOwner || isPublic) && (
+        <button
+          onClick={shareEmail}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border border-indigo-300 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 hover:shadow-md transition-all duration-200"
+          title="Share via Email"
+        >
+          <Mail className="w-4 h-4" />
+          <span className="hidden sm:inline">Email</span>
+        </button>
+      )}
     </div>
   )
 }

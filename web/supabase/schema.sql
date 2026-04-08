@@ -57,6 +57,9 @@ create policy "Users can view their own reports." on reports
 create policy "Users can insert their own reports." on reports
   for insert with check (auth.uid() = user_id);
 
+create policy "Users can delete their own reports." on reports
+  for delete using (auth.uid() = user_id);
+
 -- Create storage bucket for symptoms
 insert into storage.buckets (id, name, public) values ('symptoms', 'symptoms', true);
 
@@ -68,3 +71,19 @@ create policy "Authenticated users can upload symptoms"
 create policy "Images are viewable by everyone"
   on storage.objects for select
   using (bucket_id = 'symptoms');
+
+-- ====== Version 2 Schema Additions ======
+alter table public.profiles
+  add column if not exists height text,
+  add column if not exists weight text,
+  add column if not exists biological_sex text,
+  add column if not exists medications_list jsonb default '[]'::jsonb,
+  add column if not exists diet_preferences jsonb default '[]'::jsonb,
+  add column if not exists food_intolerances jsonb default '[]'::jsonb,
+  add column if not exists water_intake text,
+  add column if not exists meal_frequency text,
+  add column if not exists last_period_start date,
+  add column if not exists cycle_length integer,
+  add column if not exists period_duration integer,
+  add column if not exists cycle_symptoms jsonb default '[]'::jsonb,
+  add column if not exists is_pregnant boolean default false;
