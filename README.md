@@ -60,13 +60,6 @@ The application utilizes a proprietary **Agentic Triage Loop**—making up to 3 
    GROQ_API_KEY=your_groq_api_key
    ```
 
-3. **Run the Development Server**
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:3000](http://localhost:3000) to view the application.
-
----
 
 ## 📐 PRD Reference
 For a complete, architectural breakdown of the components designed in this application, please refer to the `PRD.md` file located in the repository root.
