@@ -1,6 +1,19 @@
 <div align="center">
   <h1>🩺 MedAI: Intelligent Medical Triage & Mapping</h1>
   <p><strong>A Next.js 15 Full-Stack Application powered by Groq's Llama 3 models for instant, multimodal health analysis.</strong></p>
+  
+  <a href="https://med-ai-mauve.vercel.app" target="_blank">
+    <img src="https://img.shields.io/badge/Live_Demo-Test_MedAI_Now-000000?style=for-the-badge&logo=vercel" alt="Live Demo" />
+  </a>
+
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-16.2.1-000000?style=flat-square&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/Supabase-Database-3EC78E?style=flat-square&logo=supabase" alt="Supabase" />
+    <img src="https://img.shields.io/badge/Groq-Llama_3-f3d312?style=flat-square" alt="Groq" />
+    <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  </p>
 </div>
 
 ---
