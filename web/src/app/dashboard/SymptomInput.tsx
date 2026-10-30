@@ -3,6 +3,27 @@
 import { useState, useEffect, useRef } from 'react'
 import { Mic } from 'lucide-react'
 
+interface SpeechRecognitionEventLike {
+  resultIndex: number
+  results: {
+    length: number
+    [index: number]: {
+      isFinal: boolean
+      [index: number]: { transcript: string }
+    }
+  }
+}
+
+interface SpeechRecognitionInstance {
+  continuous: boolean
+  interimResults: boolean
+  onresult: (event: SpeechRecognitionEventLike) => void
+  onerror: (event: { error: string }) => void
+  onend: () => void
+  start: () => void
+  stop: () => void
+}
+
 interface SymptomInputProps {
   value: string;
   onChange: (val: string) => void;
@@ -11,17 +32,21 @@ interface SymptomInputProps {
 
 export function SymptomInput({ value, onChange, disabled }: SymptomInputProps) {
   const [isListening, setIsListening] = useState(false)
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      const windowWithSpeech = window as unknown as {
+        SpeechRecognition?: new () => SpeechRecognitionInstance
+        webkitSpeechRecognition?: new () => SpeechRecognitionInstance
+      }
+      const SpeechRecognition = windowWithSpeech.SpeechRecognition || windowWithSpeech.webkitSpeechRecognition
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
         recognition.continuous = true
         recognition.interimResults = true
 
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event: SpeechRecognitionEventLike) => {
           for (let i = event.resultIndex; i < event.results.length; ++i) {
             if (event.results[i].isFinal) {
               const newWord = event.results[i][0].transcript.trim()
@@ -33,7 +58,7 @@ export function SymptomInput({ value, onChange, disabled }: SymptomInputProps) {
           }
         }
 
-        recognition.onerror = (event: any) => {
+        recognition.onerror = (event: { error: string }) => {
           console.error('Speech recognition error', event.error)
           setIsListening(false)
         }
@@ -74,7 +99,7 @@ export function SymptomInput({ value, onChange, disabled }: SymptomInputProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full rounded-xl border border-slate-300 p-4 pb-14 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none resize-none shadow-sm text-slate-800 disabled:bg-slate-100 disabled:text-slate-500"
+        className="w-full rounded-md border border-slate-300 dark:border-slate-700 p-3.5 pb-14 text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 shadow-xs resize-none disabled:bg-slate-50 disabled:text-slate-400"
         placeholder="E.g., I have had a persistent headache for the last 2 days accompanied by mild nausea..."
       />
       
@@ -82,21 +107,16 @@ export function SymptomInput({ value, onChange, disabled }: SymptomInputProps) {
         onClick={toggleListening}
         type="button"
         disabled={disabled}
-        className={`absolute bottom-4 right-4 p-3 rounded-full transition-all shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`absolute bottom-3.5 right-3.5 h-9 px-3 rounded-md text-sm font-medium transition-all shadow-xs flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed ${
           isListening 
-            ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse shadow-red-200 shadow-md ring-4 ring-red-100' 
-            : 'bg-white hover:bg-slate-50 text-indigo-600 border border-slate-200 hover:border-indigo-300 hover:text-indigo-700'
+            ? 'bg-red-600 text-white shadow-xs animate-pulse ring-1 ring-red-500' 
+            : 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700'
         }`}
         title={isListening ? "Stop Recording" : "Dictate Symptoms with Voice"}
       >
-        <Mic className="w-5 h-5" />
+        <Mic className="w-4 h-4" />
+        <span>{isListening ? "Listening..." : "Dictate"}</span>
       </button>
-      
-      {isListening && !disabled && (
-        <span className="absolute bottom-7 right-16 text-xs font-bold text-red-500 animate-pulse tracking-wide select-none">
-          LISTENING...
-        </span>
-      )}
     </div>
   )
 }

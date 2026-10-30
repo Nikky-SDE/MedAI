@@ -44,7 +44,8 @@ create table public.reports (
   symptom_description text,
   image_url text,
   ai_response jsonb,
-  is_emergency boolean default false
+  is_emergency boolean default false,
+  is_public boolean default false
 );
 
 -- Enable RLS
@@ -54,14 +55,22 @@ alter table public.reports enable row level security;
 create policy "Users can view their own reports." on reports
   for select using (auth.uid() = user_id);
 
+create policy "Public reports are viewable by everyone." on reports
+  for select using (is_public = true);
+
 create policy "Users can insert their own reports." on reports
   for insert with check (auth.uid() = user_id);
+
+create policy "Users can update their own reports." on reports
+  for update using (auth.uid() = user_id);
 
 create policy "Users can delete their own reports." on reports
   for delete using (auth.uid() = user_id);
 
--- Create storage bucket for symptoms
-insert into storage.buckets (id, name, public) values ('symptoms', 'symptoms', true);
+-- Create storage bucket for symptoms (idempotent)
+insert into storage.buckets (id, name, public) 
+values ('symptoms', 'symptoms', true)
+on conflict (id) do nothing;
 
 -- Enable RLS for storage
 create policy "Authenticated users can upload symptoms"
@@ -72,7 +81,14 @@ create policy "Images are viewable by everyone"
   on storage.objects for select
   using (bucket_id = 'symptoms');
 
+create policy "Authenticated users can delete symptom photos"
+  on storage.objects for delete
+  using (bucket_id = 'symptoms' and auth.role() = 'authenticated');
+
 -- ====== Version 2 Schema Additions ======
+alter table public.reports
+  add column if not exists is_public boolean default false;
+
 alter table public.profiles
   add column if not exists height text,
   add column if not exists weight text,
@@ -87,3 +103,17 @@ alter table public.profiles
   add column if not exists period_duration integer,
   add column if not exists cycle_symptoms jsonb default '[]'::jsonb,
   add column if not exists is_pregnant boolean default false;
+
+-- Performance Indexes
+create index if not exists idx_reports_user_id on public.reports(user_id);
+create index if not exists idx_reports_created_at on public.reports(created_at desc);
+create index if not exists idx_reports_is_public on public.reports(is_public);
+
+-- Foreign Key Cascading (ensures clean account deletion without orphan lockouts)
+alter table public.profiles
+  drop constraint if exists profiles_id_fkey,
+  add constraint profiles_id_fkey foreign key (id) references auth.users(id) on delete cascade;
+
+alter table public.reports
+  drop constraint if exists reports_user_id_fkey,
+  add constraint reports_user_id_fkey foreign key (user_id) references auth.users(id) on delete cascade;

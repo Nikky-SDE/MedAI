@@ -9,7 +9,12 @@ export async function saveProfile(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const jsonParseSafe = (val: any) => { try { return JSON.parse(val?.toString() || '[]') } catch { return [] } }
+  const jsonParseSafe = (val: FormDataEntryValue | null) => { try { return JSON.parse(val?.toString() || '[]') } catch { return [] } }
+  const parseIntSafe = (val: FormDataEntryValue | null) => {
+    if (!val) return null
+    const parsed = parseInt(val.toString(), 10)
+    return isNaN(parsed) ? null : parsed
+  }
 
   const age = formData.get('age')
   const height = formData.get('height')
@@ -35,7 +40,7 @@ export async function saveProfile(formData: FormData) {
     .from('profiles')
     .upsert({
       id: user.id,
-      age: age ? parseInt(age.toString()) : null,
+      age: parseIntSafe(age),
       height: height?.toString() || null,
       weight: weight?.toString() || null,
       biological_sex: biological_sex?.toString() || null,
@@ -49,8 +54,8 @@ export async function saveProfile(formData: FormData) {
       cycle_symptoms,
       medications_list,
       last_period_start,
-      cycle_length: cycle_length ? parseInt(cycle_length.toString()) : null,
-      period_duration: period_duration ? parseInt(period_duration.toString()) : null,
+      cycle_length: parseIntSafe(cycle_length),
+      period_duration: parseIntSafe(period_duration),
       is_pregnant,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'id' })

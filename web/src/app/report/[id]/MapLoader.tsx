@@ -7,7 +7,7 @@ export const MapLoader = dynamic(
   { 
     ssr: false, 
     loading: () => (
-      <div className="h-64 w-full bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse flex items-center justify-center text-[var(--text-muted)]">
+      <div className="h-64 w-full bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 animate-pulse flex items-center justify-center text-xs text-slate-400">
         Loading clinical map...
       </div>
     ) 

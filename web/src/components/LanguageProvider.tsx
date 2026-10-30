@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-type Language = 'en' | 'hi' | 'es' | 'fr'
+export type Language = 'en' | 'hi' | 'es' | 'fr'
 
 interface LanguageContextType {
   language: Language
@@ -20,7 +20,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem('medai-language') as Language
     if (stored && ['en', 'hi', 'es', 'fr'].includes(stored)) {
-      setLanguageState(stored)
+      queueMicrotask(() => {
+        setLanguageState(stored)
+      })
     }
   }, [])
 

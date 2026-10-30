@@ -1,161 +1,76 @@
-import { login, signup } from './actions'
-import { Activity, ShieldCheck, Mail, Lock, User, Shield } from 'lucide-react'
+import { ShieldCheck, Shield } from 'lucide-react'
 import Link from 'next/link'
+import { AuthForm } from './AuthForm'
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; message?: string }>
 }) {
-  const { error } = await searchParams
+  const { error, message } = await searchParams
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 relative overflow-hidden">
-      {/* Gradient background */}
-      <div className="absolute inset-0 hero-gradient-light dark:hero-gradient-dark" />
+    <div className="flex min-h-screen items-center justify-center p-4 sm:p-6 lg:p-8 bg-slate-50 dark:bg-slate-950 font-sans">
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
 
-      {/* Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#C8856A] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-[#1B2A6B] rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" style={{ animationDelay: '2s' }} />
-
-      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 bg-[var(--bg-card)]/80 backdrop-blur-xl border border-[var(--border)] rounded-3xl shadow-2xl overflow-hidden relative z-10 animate-slide-up">
-
-        {/* Left: Branding */}
-        <div className="bg-gradient-to-br from-[#C8856A] to-[#1B2A6B] p-10 md:p-14 text-white hidden md:flex flex-col justify-between">
+        {/* Left: Brand Blue Panel in Light Mode, Dark Slate in Dark Mode */}
+        <div className="md:col-span-5 bg-gradient-to-br from-blue-600 via-blue-600 to-blue-700 dark:from-slate-900 dark:to-slate-900 p-8 sm:p-10 lg:p-12 text-white hidden md:flex flex-col justify-between border-r border-blue-500/30 dark:border-slate-800">
           <div>
-            <Link href="/" className="inline-flex items-center text-white/90 hover:text-white transition-colors mb-12 gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
+            <Link href="/" className="inline-flex items-center text-white hover:text-blue-100 dark:text-slate-100 dark:hover:text-white transition-colors mb-12 gap-3 group">
+              <div className="w-9 h-9 rounded-md bg-white text-blue-600 dark:bg-slate-800 dark:text-blue-400 dark:border dark:border-slate-700 flex items-center justify-center shadow-xs group-hover:bg-blue-50 dark:group-hover:bg-slate-700 transition-colors">
+                <Shield className="w-5 h-5" />
               </div>
-              <span className="text-2xl font-extrabold">MedAI</span>
+              <span className="text-xl font-bold tracking-tight text-white dark:text-slate-100">MedAI</span>
             </Link>
 
-            <h2 className="text-4xl font-bold mb-6 leading-tight">
-              Your health journey,<br />powered by intelligence.
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 tracking-tight text-white dark:text-slate-100 leading-tight">
+              Clinical intelligence,<br />at your fingertips.
             </h2>
-            <p className="text-white/80 text-lg mb-8 leading-relaxed">
-              Get instant AI-driven health insights before visiting your doctor.
+            <p className="text-blue-100 dark:text-slate-400 text-sm sm:text-base mb-8 leading-relaxed">
+              Preliminary medical guidance and intelligent symptom triage built for patients and enterprise healthcare workflows.
             </p>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               {[
-                'Smart conversational triage',
-                'Voice symptom dictation',
-                'Downloadable health reports',
+                { title: 'Multimodal symptom evaluation', desc: 'Describe or dictate symptoms freely' },
+                { title: 'Smart follow-up triage loop', desc: 'AI refines assessment with context' },
+                { title: 'Verified regional facility mapping', desc: 'Instant access to nearby emergency care' },
               ].map(item => (
-                <div key={item} className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <ShieldCheck className="w-3 h-3 text-white" />
+                <div key={item.title} className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded bg-blue-500/40 dark:bg-slate-800 border border-blue-400/40 dark:border-slate-700 flex items-center justify-center flex-shrink-0 text-white dark:text-blue-400 mt-0.5">
+                    <ShieldCheck className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-white/85 text-sm">{item}</span>
+                  <div>
+                    <span className="text-sm font-semibold text-white dark:text-slate-200 block leading-snug">{item.title}</span>
+                    <span className="text-xs text-blue-100 dark:text-slate-400 block mt-0.5">{item.desc}</span>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-white/10 p-5 rounded-2xl border border-white/20 mt-8">
-            <div className="flex items-center gap-2 mb-2">
-              <ShieldCheck className="w-5 h-5 text-green-300" />
-              <h3 className="font-semibold">Secure & Private</h3>
+          <div className="bg-blue-700/50 dark:bg-slate-800/80 p-5 rounded-lg border border-blue-500/40 dark:border-slate-700 mt-10">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-300 dark:text-emerald-400 flex-shrink-0" />
+              <h3 className="text-sm font-semibold text-white dark:text-slate-200">Privacy & Security</h3>
             </div>
-            <p className="text-white/70 text-sm">Your medical data is encrypted and secured with enterprise-grade Supabase infrastructure.</p>
+            <p className="text-blue-100 dark:text-slate-400 text-xs leading-relaxed">
+              Medical assessments are stored in encrypted Supabase containers with strict Row Level Security.
+            </p>
           </div>
         </div>
 
-        {/* Right: Forms */}
-        <div className="p-8 md:p-12 bg-[var(--bg-card)]">
-          {/* Mobile logo */}
-          <div className="md:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#C8856A] to-[#1B2A6B] flex items-center justify-center">
-              <Shield className="w-4 h-4 text-white" />
+        {/* Right: Authentication Forms (Proportionate, h-10 sizing, clear hierarchy) */}
+        <div className="md:col-span-7 p-6 sm:p-10 lg:p-12 bg-white dark:bg-slate-900 flex flex-col justify-center">
+          {/* Mobile Logo */}
+          <div className="md:hidden flex items-center gap-2.5 mb-8">
+            <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-xs">
+              <Shield className="w-4 h-4" />
             </div>
-            <span className="text-xl font-bold gradient-text">MedAI</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">MedAI</span>
           </div>
 
-          <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-1">Welcome</h2>
-          <p className="text-[var(--text-secondary)] mb-8">Sign in or create an account to continue.</p>
-
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border-l-4 border-red-500 text-red-700 dark:text-red-400 text-sm rounded-r-xl flex items-start gap-2">
-              ⚠️ <span>{decodeURIComponent(error)}</span>
-            </div>
-          )}
-
-          {/* Login Form */}
-          <form action={login} className="space-y-4 mb-8">
-            <div className="relative">
-              <label htmlFor="email_login" className="sr-only">Email</label>
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-              <input
-                id="email_login" name="email" type="email" required
-                placeholder="Email address"
-                className="w-full pl-11 pr-4 py-3.5 border border-[var(--border)] bg-[var(--bg-sidebar)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-sm input-focus"
-              />
-            </div>
-
-            <div className="relative">
-              <label htmlFor="password_login" className="sr-only">Password</label>
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-              <input
-                id="password_login" name="password" type="password" required
-                placeholder="Password"
-                className="w-full pl-11 pr-4 py-3.5 border border-[var(--border)] bg-[var(--bg-sidebar)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-sm input-focus"
-              />
-            </div>
-
-            <button type="submit" className="w-full btn-gradient py-3.5 rounded-xl font-semibold text-sm shadow-lg">
-              Sign In
-            </button>
-          </form>
-
-          <div className="relative flex py-4 items-center">
-            <div className="flex-grow border-t border-[var(--border)]" />
-            <span className="flex-shrink-0 mx-4 text-[var(--text-muted)] text-sm">New to MedAI?</span>
-            <div className="flex-grow border-t border-[var(--border)]" />
-          </div>
-
-          {/* Signup Form */}
-          <form action={signup} className="space-y-4 mt-4 border border-[var(--border)] bg-[var(--bg-sidebar)] p-6 rounded-2xl">
-            <h3 className="font-semibold text-[var(--text-secondary)] text-sm mb-1">Create a free account</h3>
-
-            <div className="relative">
-              <label htmlFor="fullName" className="sr-only">Full Name</label>
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-              <input
-                id="fullName" name="fullName" type="text" required
-                placeholder="Full Name"
-                className="w-full pl-11 pr-4 py-3.5 border border-[var(--border)] bg-[var(--bg-card)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-sm input-focus"
-              />
-            </div>
-
-            <div className="relative">
-              <label htmlFor="email_signup" className="sr-only">Email</label>
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-              <input
-                id="email_signup" name="email" type="email" required
-                placeholder="Email address"
-                className="w-full pl-11 pr-4 py-3.5 border border-[var(--border)] bg-[var(--bg-card)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-sm input-focus"
-              />
-            </div>
-
-            <div className="relative">
-              <label htmlFor="password_signup" className="sr-only">Password</label>
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-              <input
-                id="password_signup" name="password" type="password" required
-                placeholder="Create Password"
-                className="w-full pl-11 pr-4 py-3.5 border border-[var(--border)] bg-[var(--bg-card)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-sm input-focus"
-              />
-            </div>
-
-            <button type="submit" className="w-full btn-gradient py-3.5 rounded-xl font-semibold text-sm shadow-lg">
-              Sign Up for Free
-            </button>
-          </form>
-
-          <p className="mt-6 text-xs text-center text-[var(--text-muted)]">
-            By continuing, you acknowledge our medical disclaimer. MedAI is for informational purposes only.
-          </p>
+          <AuthForm error={error} message={message} />
         </div>
       </div>
     </div>

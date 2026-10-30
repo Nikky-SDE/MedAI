@@ -4,18 +4,20 @@ import { Download } from 'lucide-react'
 
 export function DownloadPdfButton() {
   const downloadReport = () => {
-    // We use the browser's native print-to-pdf functionality which perfectly 
-    // supports modern CSS like lab() Colors from Tailwind v4, unlike html2canvas.
+    // Uses the browser's native print-to-pdf pipeline, rendering crisp vector fonts and styling
     window.print()
   }
 
   return (
     <button 
+      type="button"
       onClick={downloadReport}
-      className={`px-5 py-2.5 flex items-center font-bold rounded-xl shadow-md transition-all focus:outline-none focus:ring-4 focus:ring-blue-100 flex-shrink-0 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transform hover:scale-105 active:scale-95`}
+      className="inline-flex items-center gap-2 h-10 px-4 text-sm font-medium rounded-md shadow-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20 active:scale-[0.99] flex-shrink-0"
+      title="Download or print report PDF"
+      aria-label="Download assessment as PDF"
     >
-      <Download className="w-4 h-4 mr-2 hidden sm:block" />
-      Download PDF
+      <Download className="w-4 h-4" />
+      <span>Download PDF</span>
     </button>
   )
 }

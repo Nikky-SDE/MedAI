@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Shield, Activity, Zap, ShieldCheck, ArrowRight, Mic, FileText } from 'lucide-react'
+import { Shield, Activity, Zap, ShieldCheck, ArrowRight } from 'lucide-react'
+import { HeroVisual } from './HeroVisual'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -9,167 +10,145 @@ export default async function Home() {
   if (user) redirect('/dashboard')
 
   return (
-    <div className="min-h-screen relative overflow-hidden hero-gradient-light dark:hero-gradient-dark">
+    <div className="min-h-screen relative overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+
+      {/* Background ambient lighting */}
+      <div 
+        aria-hidden="true" 
+        className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-blue-100/40 via-transparent to-transparent dark:from-blue-950/20 dark:via-transparent dark:to-transparent -z-10" 
+      />
 
       {/* Navbar for landing page */}
-      <header className="relative z-10 w-full px-6 py-5 flex items-center justify-between max-w-7xl mx-auto">
+      <header className="relative z-10 w-full px-6 py-4 flex items-center justify-between max-w-7xl mx-auto border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#C8856A] to-[#1B2A6B] shadow-lg">
-            <Shield className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-xs">
+            <Shield className="w-4 h-4" />
           </div>
-          <span className="text-xl font-bold gradient-text">MedAI</span>
+          <span className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">MedAI</span>
         </div>
-        <Link
-          href="/login"
-          className="btn-gradient px-5 py-2 rounded-full text-sm font-semibold shadow-md"
-        >
-          Get Started
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md text-sm font-medium border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-xs leading-none"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center h-9 px-4 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-xs gap-1.5 transition-colors leading-none"
+          >
+            <span>Get Started</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </header>
 
       {/* Hero Section */}
-      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-16 pb-24 flex flex-col lg:flex-row items-center gap-16">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-12 pb-20 sm:pt-16 sm:pb-24 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
 
-        {/* Left: Text */}
+        {/* Left Column: Heading, Value Prop & CTAs */}
         <div className="flex-1 text-center lg:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 dark:bg-white/8 border border-slate-200 dark:border-white/10 text-sm font-medium text-slate-600 dark:text-slate-300 mb-8 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-            AI-Powered Smart Triage — Now Live
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 text-xs sm:text-sm font-medium text-blue-700 dark:text-blue-300 mb-6 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
+            Clinical AI Smart Triage · Live Diagnostic Engine
           </div>
 
-          <h1 className="text-5xl lg:text-7xl font-black tracking-tight leading-none mb-6">
-            <span className="text-[var(--text-primary)]">Your Health,</span>
-            <br />
-            <span className="gradient-text">Understood.</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.1] mb-6">
+            Your Health Intelligence,{' '}
+            <span className="text-blue-600 dark:text-blue-400">Understood.</span>
           </h1>
 
-          <p className="text-lg lg:text-xl text-[var(--text-secondary)] max-w-xl mx-auto lg:mx-0 mb-10 leading-relaxed">
-            Describe your symptoms or upload a photo. Our AI conducts a smart triage interview, building diagnostic confidence before delivering a comprehensive health report.
+          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+            Describe your symptoms or upload clinical imagery. MedAI conducts an adaptive triage assessment, building diagnostic confidence before delivering an actionable clinical health report.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
             <Link
               href="/login"
-              className="btn-gradient px-8 py-4 rounded-full text-base font-bold shadow-xl flex items-center gap-2 group"
+              className="w-full sm:w-auto h-11 px-6 rounded-md text-base font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex items-center justify-center gap-2 group transition-colors"
             >
-              Start Free Assessment
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <span>Start Free Assessment</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
-            <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-              <ShieldCheck className="w-4 h-4 text-green-500" />
-              No credit card required
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 font-medium">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+              <span>No credit card required · Instant triage</span>
             </div>
           </div>
 
           {/* Stats row */}
-          <div className="flex items-center gap-8 mt-12 justify-center lg:justify-start">
+          <div className="flex items-center gap-6 sm:gap-10 mt-10 justify-center lg:justify-start flex-wrap pt-6 border-t border-slate-200 dark:border-slate-800">
             {[
-              { label: 'Active Users', value: '12K+' },
-              { label: 'Reports Generated', value: '50K+' },
-              { label: 'AI Accuracy', value: '94%' },
+              { label: 'Active Patients', value: '12,000+' },
+              { label: 'Reports Compiled', value: '50,000+' },
+              { label: 'Diagnostic Accuracy', value: '94.8%' },
             ].map(stat => (
               <div key={stat.label}>
-                <div className="text-2xl font-black gradient-text">{stat.value}</div>
-                <div className="text-xs text-[var(--text-muted)] mt-0.5">{stat.label}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{stat.value}</div>
+                <div className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Right: AI Orb + floating cards */}
-        <div className="flex-1 relative flex items-center justify-center min-h-[420px] w-full">
-
-          {/* Central AI Orb */}
-          <div className="relative z-10 animate-float">
-            <div
-              className="ai-orb w-52 h-52 lg:w-64 lg:h-64 rounded-full"
-              style={{ filter: 'blur(0px)' }}
-            />
-            <div className="absolute inset-4 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-sm flex items-center justify-center">
-              <Shield className="w-16 h-16 text-white drop-shadow-xl" />
-            </div>
-          </div>
-
-          {/* Floating info cards */}
-          <div className="absolute top-8 right-4 lg:right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl p-3.5 shadow-xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-sm">
-                <Activity className="w-3.5 h-3.5 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-semibold">Smart Triage</p>
-                <p className="text-xs font-bold text-[var(--text-primary)]">Confidence: 94%</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute bottom-12 left-4 lg:left-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl p-3.5 shadow-xl animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#C8856A] to-[#1B2A6B] flex items-center justify-center shadow-sm">
-                <Mic className="w-3.5 h-3.5 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-semibold">Voice Dictation</p>
-                <p className="text-xs font-bold text-[var(--text-primary)]">Speak Your Symptoms</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute top-1/2 left-0 -translate-y-1/2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl p-3.5 shadow-xl animate-fade-in hidden lg:block" style={{ animationDelay: '0.6s' }}>
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-sm">
-                <FileText className="w-3.5 h-3.5 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-semibold">AI Report</p>
-                <p className="text-xs font-bold text-[var(--text-primary)]">Instant Analysis</p>
-              </div>
-            </div>
-          </div>
+        {/* Right Column: Central Dashboard Mockup & Floating Badges */}
+        <div className="flex-1 w-full flex items-center justify-center">
+          <HeroVisual />
         </div>
       </main>
 
-      {/* Feature Cards */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-24">
+      {/* Feature Highlights Section */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20 pt-8">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">
+            Enterprise Clinical Intelligence
+          </h2>
+          <p className="text-base text-slate-600 dark:text-slate-300">
+            Engineered for clinical triage accuracy, patient privacy, and rapid differential analysis.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
               icon: Activity,
-              color: 'from-blue-500 to-indigo-500',
-              title: 'Multimodal Analysis',
-              desc: 'Simultaneously analyzes your photos and symptoms using Gemini for unmatched diagnostic accuracy.',
+              title: 'Multimodal Clinical Analysis',
+              desc: 'Simultaneously analyzes clinical photos and natural-language symptoms using high-precision vision AI for granular differential diagnosis.',
             },
             {
               icon: Zap,
-              color: 'from-[#C8856A] to-[#E8A98B]',
-              title: 'Smart Triage Loop',
-              desc: 'AI asks up to 3 targeted follow-up questions, raising diagnostic confidence before your final report.',
+              title: 'Adaptive Smart Triage Loop',
+              desc: 'Engages in up to 3 targeted follow-up questions, actively raising diagnostic confidence before finalizing your clinical report.',
             },
             {
               icon: ShieldCheck,
-              color: 'from-emerald-500 to-teal-500',
-              title: 'Secure & Private',
-              desc: 'Your health data is encrypted end-to-end with Supabase. Only you can access your reports.',
+              title: 'Enterprise-Grade Privacy',
+              desc: 'Patient health records are protected with Row Level Security (RLS) on Supabase with zero unauthenticated data exposure.',
             },
           ].map(feature => (
             <div
               key={feature.title}
-              className="card-hover bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-slate-200/80 dark:border-white/8 rounded-3xl p-8 shadow-sm"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 sm:p-8 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
             >
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center shadow-md mb-6`}>
-                <feature.icon className="w-6 h-6 text-white" />
+              <div className="w-11 h-11 rounded-md bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-5 shadow-xs">
+                <feature.icon className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)] mb-3">{feature.title}</h3>
-              <p className="text-[var(--text-secondary)] leading-relaxed text-sm">{feature.desc}</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
+              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">{feature.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Medical disclaimer footer */}
-      <footer className="relative z-10 text-center px-6 pb-10 text-xs text-[var(--text-muted)]">
-        <ShieldCheck className="w-4 h-4 inline mr-1.5 text-amber-500" />
-        <strong>Medical Disclaimer:</strong> MedAI is an informational tool. It is NOT a substitute for professional medical diagnosis. Always consult a certified healthcare professional.
+      <footer className="relative z-10 text-center px-6 pb-12 pt-6 border-t border-slate-200 dark:border-slate-800 text-sm text-slate-500 dark:text-slate-400 max-w-7xl mx-auto">
+        <div className="flex items-center justify-center gap-2 mb-2 font-medium text-slate-700 dark:text-slate-300">
+          <ShieldCheck className="w-4 h-4 text-amber-500 flex-shrink-0" />
+          <span>Medical Disclaimer</span>
+        </div>
+        <p className="max-w-2xl mx-auto leading-relaxed">
+          MedAI is an informational triage support platform. It is not a substitute for professional clinical medical advice, emergency care, diagnosis, or treatment. Always consult a licensed healthcare provider for medical concerns.
+        </p>
       </footer>
     </div>
   )

@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { analyzeSymptoms } from './actions'
 import { ImageUpload } from './ImageUpload'
-import { Activity, ArrowUp, Paperclip } from 'lucide-react'
+import { Activity, ArrowUp, Paperclip, Pill } from 'lucide-react'
 import { t, getSuggestions, Language } from '@/lib/i18n'
 import { MicButton } from './MicButton'
 
@@ -14,12 +14,12 @@ interface TriageFormProps {
 export function TriageForm({ language }: TriageFormProps) {
   const [turnCount, setTurnCount] = useState(0)
   const [confidenceScore, setConfidenceScore] = useState(0)
-  const [currentQuestion, setCurrentQuestion] = useState('')
   const [messages, setMessages] = useState<{ role: string; text: string }[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isTriaging, setIsTriaging] = useState(false)
   const [isDone, setIsDone] = useState(false)
   const [showImageUpload, setShowImageUpload] = useState(false)
+  const [hasImage, setHasImage] = useState(false)
 
   const formRef = useRef<HTMLFormElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -60,13 +60,11 @@ export function TriageForm({ language }: TriageFormProps) {
         // Stop after 3 follow-up questions to prevent an infinite loop, or if AI reaches high confidence
         if (newScore >= 85 || nextTurn >= 3) {
           setIsDone(true)
-          setCurrentQuestion(t('triage_complete', language))
           const doneMsg = { role: 'ai', text: t('triage_complete', language) }
           setMessages([...updatedMessages, doneMsg])
           setTimeout(() => formRef.current?.requestSubmit(), 600)
         } else {
           const aiQuestion = data.next_question || t('greeting', language)
-          setCurrentQuestion(aiQuestion)
           const aiMsg = { role: 'ai', text: aiQuestion }
           setMessages([...updatedMessages, aiMsg])
           setTimeout(scrollToBottom, 50)
@@ -91,44 +89,46 @@ export function TriageForm({ language }: TriageFormProps) {
   const showSuggestions = messages.length === 0 && !inputValue
 
   return (
-    <form ref={formRef} action={analyzeSymptoms} onSubmit={handleTriageSubmit} className="flex flex-col">
+    <form ref={formRef} action={analyzeSymptoms} onSubmit={handleTriageSubmit} className="flex flex-col p-5 sm:p-6 gap-5">
       <input type="hidden" name="symptoms" value={compiledSymptoms} />
       <input type="hidden" name="language" value={language} />
 
       {/* ===== Confidence Meter ===== */}
-      <div className="px-6 pt-6 pb-4 border-b border-[var(--border)]">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-xs font-semibold text-[var(--text-secondary)] flex items-center gap-1.5 uppercase tracking-widest">
-            <Activity className="w-3.5 h-3.5" />
+      <div className="space-y-2">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wide">
+            <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             {t('confidence', language)}
           </span>
-          <span className="text-sm font-bold" style={{ color: confidenceScore >= 85 ? '#22C55E' : confidenceScore >= 50 ? '#F59E0B' : '#C8856A' }}>
+          <span className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white tabular-nums">
             {confidenceScore}%
           </span>
         </div>
-        <div className="w-full bg-slate-100 dark:bg-white/8 rounded-full h-1.5 overflow-hidden">
+        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
           <div
-            className="confidence-bar h-1.5 rounded-full"
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300 shadow-xs"
             style={{ width: `${confidenceScore}%` }}
           />
         </div>
-        <div className="flex justify-between mt-1.5 text-[10px] text-[var(--text-muted)] uppercase tracking-widest font-medium">
-          <span>{t('triage_turn', language)}: {turnCount} / 3</span>
-          <span>{t('target', language)}: 85%</span>
+        <div className="flex justify-between mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+          <span>{t('triage_turn', language)}: <strong className="text-slate-700 dark:text-slate-200 font-semibold">{turnCount} / 3</strong></span>
+          <span>{t('target', language)}: <strong className="text-slate-700 dark:text-slate-200 font-semibold">85%</strong></span>
         </div>
       </div>
 
       {/* ===== Message History ===== */}
       {messages.length > 0 && (
-        <div className="px-6 py-4 space-y-3 max-h-64 overflow-y-auto">
+        <div className="space-y-3.5 max-h-80 overflow-y-auto pr-1">
           {messages.map((msg, idx) => (
             <div
               key={idx}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}
             >
               <div
-                className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed ${
-                  msg.role === 'user' ? 'message-user' : 'message-ai'
+                className={`max-w-[85%] px-4 py-3 text-sm sm:text-base leading-relaxed rounded-lg shadow-xs ${
+                  msg.role === 'user' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700'
                 }`}
               >
                 {msg.text}
@@ -137,11 +137,11 @@ export function TriageForm({ language }: TriageFormProps) {
           ))}
           {isTriaging && (
             <div className="flex justify-start">
-              <div className="message-ai px-4 py-3">
-                <div className="flex gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--text-muted)] animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-lg shadow-xs">
+                <div className="flex gap-2 items-center">
+                  <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             </div>
@@ -152,53 +152,57 @@ export function TriageForm({ language }: TriageFormProps) {
 
       {/* ===== Suggestion Chips ===== */}
       {showSuggestions && (
-        <div className="px-6 pt-4 pb-2 flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
           {suggestions.map(chip => (
             <button
               key={chip}
               type="button"
               onClick={() => setInputValue(chip)}
-              className="px-3 py-1.5 rounded-full text-xs font-medium border border-[var(--border)] text-[var(--text-secondary)] hover:border-[#C8856A] hover:text-[#C8856A] dark:hover:border-indigo-400 dark:hover:text-indigo-400 transition-all duration-150 bg-[var(--bg-sidebar)]"
+              className="inline-flex items-center px-3.5 py-1.5 rounded-full text-sm font-medium border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-xs cursor-pointer"
             >
-              {chip}
+              +{chip}
             </button>
           ))}
         </div>
       )}
 
-      {/* ===== Image Upload (collapsible) ===== */}
-      {showImageUpload && (
-        <div className="px-6 py-3 border-t border-[var(--border)] animate-slide-up">
-          <ImageUpload />
-        </div>
-      )}
-
       {/* ===== Medications (shown only on first turn) ===== */}
       {turnCount === 0 && !isDone && (
-        <div className="px-6 py-3 border-t border-[var(--border)]">
+        <div className="relative flex items-center bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-3.5 py-1 transition-colors focus-within:ring-1 focus-within:ring-blue-500/20 focus-within:border-blue-600">
+          <Pill className="w-4 h-4 text-slate-400 flex-shrink-0 mr-2.5" />
           <input
             name="medications"
             type="text"
-            className="w-full text-sm bg-transparent text-[var(--text-secondary)] placeholder:text-[var(--text-muted)] outline-none input-focus border border-[var(--border)] rounded-xl px-4 py-2.5"
-            placeholder={`💊 ${t('medications', language)} (${t('medications_placeholder', language)})`}
+            className="w-full bg-transparent border-0 outline-none text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 py-1.5 focus:ring-0"
+            placeholder={`${t('medications', language)} (${t('medications_placeholder', language)})`}
             disabled={isTriaging || isDone}
           />
         </div>
       )}
 
-      {/* ===== Bottom Input Bar ===== */}
-      <div className="px-4 py-4 border-t border-[var(--border)] bg-[var(--bg-card)]">
-        <div className="flex items-end gap-2 bg-[var(--bg-sidebar)] rounded-2xl border border-[var(--border)] px-3 py-2 focus-within:border-[#C8856A] dark:focus-within:border-indigo-500 transition-colors">
+      {/* ===== Bottom Input Bar & Dropzone ===== */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700 p-2 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-600/20 transition-all shadow-xs">
 
           {/* Attach photo */}
           <button
             type="button"
             onClick={() => setShowImageUpload(!showImageUpload)}
-            disabled={isDone || turnCount > 0}
-            className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-[var(--text-muted)] hover:text-[#C8856A] dark:hover:text-indigo-400 hover:bg-[var(--border)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Attach photo"
+            disabled={isDone}
+            className={`relative flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+              showImageUpload
+                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200 dark:border-blue-900'
+                : hasImage
+                ? 'bg-blue-50/50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700'
+            }`}
+            title={hasImage ? 'Clinical photo attached (click to view)' : 'Attach clinical photo'}
+            aria-label={hasImage ? 'Clinical photo attached (click to view)' : 'Attach clinical photo'}
           >
             <Paperclip className="w-4 h-4" />
+            {hasImage && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 ring-2 ring-white dark:ring-slate-900" />
+            )}
           </button>
 
           {/* Textarea */}
@@ -209,7 +213,7 @@ export function TriageForm({ language }: TriageFormProps) {
             onChange={e => {
               setInputValue(e.target.value)
               e.target.style.height = 'auto'
-              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+              e.target.style.height = Math.min(e.target.scrollHeight, 140) + 'px'
             }}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -218,7 +222,7 @@ export function TriageForm({ language }: TriageFormProps) {
               }
             }}
             disabled={isTriaging || isDone}
-            className="flex-1 bg-transparent resize-none outline-none text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] py-1.5 max-h-32 disabled:opacity-50"
+            className="flex-1 bg-transparent resize-none outline-none text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 py-1.5 px-2 max-h-36 disabled:opacity-50"
             placeholder={isDone ? t('generating_report', language) : t('placeholder', language)}
             style={{ lineHeight: '1.5' }}
           />
@@ -234,15 +238,21 @@ export function TriageForm({ language }: TriageFormProps) {
           <button
             type="submit"
             disabled={isTriaging || isDone || !inputValue.trim()}
-            className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center btn-gradient disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none shadow-md"
+            className="flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-40 disabled:cursor-not-allowed shadow-xs transition-colors"
             title="Send"
+            aria-label="Send symptom description"
           >
             <ArrowUp className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-center text-[10px] text-[var(--text-muted)] mt-2">
-          Press Enter to send · Shift+Enter for new line
+        {/* ===== Image Upload Zone (expands below input) ===== */}
+        <div className={showImageUpload ? 'animate-slide-up' : 'hidden'}>
+          <ImageUpload onFileSelected={setHasImage} />
+        </div>
+
+        <p className="text-center text-xs text-slate-500 dark:text-slate-400 pt-0.5">
+          Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[11px] text-slate-600 dark:text-slate-300">Enter</kbd> to send · <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[11px] text-slate-600 dark:text-slate-300">Shift+Enter</kbd> for new line
         </p>
       </div>
     </form>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { Navbar } from '@/components/Navbar'
@@ -8,9 +8,10 @@ import { useLanguage } from '@/components/LanguageProvider'
 import { t } from '@/lib/i18n'
 import { deleteReport } from './actions'
 import {
-  Plus, Clock, Activity, Shield,
-  FileText, ShieldAlert, Trash2,
-  ChevronDown, ChevronUp, Loader2
+  Plus, Clock, Activity, Shield, ShieldAlert,
+  FileText, Trash2,
+  ChevronDown, ChevronUp, Loader2,
+  PanelLeftClose
 } from 'lucide-react'
 
 // Lazy load the triage form to improve compile times and page load
@@ -33,12 +34,39 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ reports, userEmail, userName }: DashboardClientProps) {
-  const { language, setLanguage } = useLanguage()
-  const [showTriage, setShowTriage] = useState(true)
+  const { language } = useLanguage()
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true) // Start open on desktop
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false) // Mobile drawer
+  const [isDesktopPinned, setIsDesktopPinned] = useState(true) // Desktop sidebar: open by default
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [localReports, setLocalReports] = useState(reports)
+
+  // Keep local optimistic list synchronized when server reports prop updates
+  useEffect(() => {
+    queueMicrotask(() => setLocalReports(reports))
+  }, [reports])
+
+  // Persist desktop sidebar preference in localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('medai-sidebar-pinned')
+    if (saved !== null) {
+      queueMicrotask(() => setIsDesktopPinned(saved === 'true'))
+    }
+  }, [])
+
+  const toggleDesktopSidebar = () => {
+    const next = !isDesktopPinned
+    setIsDesktopPinned(next)
+    localStorage.setItem('medai-sidebar-pinned', String(next))
+  }
+
+  const handleToggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsMobileSidebarOpen(prev => !prev)
+    } else {
+      toggleDesktopSidebar()
+    }
+  }
 
   const displayName = userName || userEmail?.split('@')[0] || 'there'
 
@@ -55,7 +83,7 @@ export function DashboardClient({ reports, userEmail, userName }: DashboardClien
     
     try {
       await deleteReport(id)
-    } catch (err) {
+    } catch {
       setLocalReports(previousReports) // Rollback on failure
       alert('Delete failed. Please check your database permissions.')
     } finally {
@@ -67,41 +95,58 @@ export function DashboardClient({ reports, userEmail, userName }: DashboardClien
     <div className="flex h-screen overflow-hidden bg-[var(--bg)]">
 
       {/* ===== OVERLAY (Mobile only) ===== */}
-      {isSidebarOpen && (
+      {isMobileSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] lg:hidden transition-opacity duration-300"
-          onClick={() => setIsSidebarOpen(false)}
+          onClick={() => setIsMobileSidebarOpen(false)}
         />
       )}
 
       {/* ===== SIDEBAR ===== */}
       <aside className={`fixed lg:relative z-[70] lg:z-10 flex flex-col h-full border-r border-[var(--border)] bg-[var(--bg-sidebar)] transition-all duration-300 ease-in-out ${
-        isSidebarOpen 
-          ? 'translate-x-0 w-72 shadow-2xl lg:shadow-none' 
-          : '-translate-x-full lg:translate-x-0 lg:w-0 lg:opacity-0 lg:border-none'
+        // Mobile: slide in/out as a drawer
+        // Desktop: collapse to 0 or expand to w-72 based on pinned state
+        isMobileSidebarOpen
+          ? 'translate-x-0 w-72 shadow-2xl lg:shadow-none'
+          : '-translate-x-full lg:translate-x-0'
+      } ${
+        isDesktopPinned
+          ? 'lg:w-72'
+          : 'lg:w-0 lg:opacity-0 lg:border-none lg:overflow-hidden'
       }`}>
 
         {/* Brand */}
-        <div className="p-5 border-b border-[var(--border)] flex items-center justify-between overflow-hidden">
-          <div className="flex items-center gap-2.5 min-w-max">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#C8856A] to-[#1B2A6B] flex items-center justify-center shadow-md">
-              <Shield className="w-4 h-4 text-white" />
+        <div className="h-14 px-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between w-full flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-xs flex-shrink-0">
+              <Shield className="w-4 h-4" />
             </div>
-            <span className="text-lg font-bold gradient-text">MedAI</span>
+            <span className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">MedAI</span>
           </div>
           <button 
-            onClick={() => setIsSidebarOpen(false)}
-            className="p-2 hover:bg-slate-200 dark:hover:bg-white/5 rounded-lg text-slate-500 dark:text-slate-400"
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                setIsMobileSidebarOpen(false)
+              } else {
+                toggleDesktopSidebar()
+              }
+            }}
+            aria-label="Collapse sidebar"
+            className="h-8 w-8 rounded-md flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0"
+            title="Collapse sidebar"
           >
-            <ChevronDown className="w-5 h-5 rotate-90" />
+            <PanelLeftClose className="w-4 h-4" />
           </button>
         </div>
 
         {/* New Assessment button */}
-        <div className="p-4 overflow-hidden">
+        <div className="px-3 my-4 overflow-hidden flex-shrink-0">
           <button
-            onClick={() => setShowTriage(true)}
-            className="w-full btn-gradient rounded-xl py-2.5 px-4 text-sm font-semibold flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all min-w-max"
+            onClick={() => {
+              const el = document.getElementById('symptom-input')
+              el?.focus()
+            }}
+            className="w-full h-10 rounded-md px-3 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center justify-center gap-2 transition-colors focus:outline-none focus:ring-1 focus:ring-blue-600"
           >
             <Plus className="w-4 h-4" />
             {t('new_assessment', language)}
@@ -109,40 +154,38 @@ export function DashboardClient({ reports, userEmail, userName }: DashboardClien
         </div>
 
         {/* Report History */}
-        <div className="flex-1 p-4 overflow-y-auto no-scrollbar overflow-x-hidden">
+        <div className="flex-1 px-3 py-2 overflow-y-auto no-scrollbar overflow-x-hidden">
           <button
             onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-            className="w-full flex items-center justify-between text-[11px] font-black text-slate-500 dark:text-slate-300 uppercase tracking-[0.25em] mb-5 px-1 hover:text-[#C8856A] transition-colors min-w-max"
+            className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2.5 px-1 hover:text-slate-900 dark:hover:text-slate-200 transition-colors min-w-max"
           >
             <span>{t('past_reports', language)}</span>
             {isHistoryCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </button>
 
           {!isHistoryCollapsed && (
-            <div className="space-y-2 min-w-[250px]">
+            <div className="space-y-1.5 min-w-[240px]">
               {localReports.length === 0 ? (
-                <div className="text-center py-10 px-4 bg-slate-200/40 dark:bg-white/5 rounded-2xl border border-dashed border-slate-300 dark:border-white/10">
-                  <FileText className="w-10 h-10 text-slate-400 dark:text-slate-500 mx-auto mb-3 opacity-50" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{t('no_reports', language)}</p>
+                <div className="text-center py-8 px-4 bg-slate-50 dark:bg-slate-900/50 rounded-md border border-dashed border-slate-200 dark:border-slate-800">
+                  <FileText className="w-8 h-8 text-slate-400 dark:text-slate-500 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{t('no_reports', language)}</p>
                 </div>
               ) : (
                 localReports.map((report) => (
                   <div key={report.id} className="group relative">
                     <Link
                       href={`/report/${report.id}`}
-                      className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-[var(--bg-card)] hover:bg-white dark:bg-white/5 dark:hover:bg-white/10 border border-[var(--border)] hover:border-[#C8856A] transition-all duration-300 pr-10 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]"
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors pr-8 block"
                     >
-                      <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 relative ${report.is_emergency ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]'}`}>
-                        <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-inherit" />
-                      </div>
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${report.is_emergency ? 'bg-red-500' : 'bg-emerald-500'}`} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-bold text-[var(--text-primary)] truncate group-hover:text-[#C8856A] transition-colors leading-tight">
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug">
                           {report.ai_response?.condition || 'Health Assessment'}
                         </p>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <Clock className="w-3 h-3 text-[var(--text-secondary)]" />
-                          <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-wider">
-                            {new Date(report.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                          <p suppressHydrationWarning className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                            {new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </p>
                         </div>
                       </div>
@@ -152,7 +195,7 @@ export function DashboardClient({ reports, userEmail, userName }: DashboardClien
                     <button
                       onClick={(e) => handleDelete(e, report.id)}
                       disabled={deletingId === report.id}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50"
                       title="Delete assessment"
                     >
                       {deletingId === report.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
@@ -165,14 +208,14 @@ export function DashboardClient({ reports, userEmail, userName }: DashboardClien
         </div>
 
         {/* User profile at bottom */}
-        <div className="p-4 border-t border-[var(--border)] overflow-hidden">
-          <Link href="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-white dark:hover:bg-white/5 transition-all group min-w-max">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C8856A] to-[#1B2A6B] flex items-center justify-center text-white text-sm font-black flex-shrink-0 shadow-inner">
+        <div className="p-3.5 pt-4 mt-auto border-t border-slate-200 dark:border-slate-800 bg-[var(--bg-sidebar)] overflow-hidden">
+          <Link href="/profile" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group min-w-max">
+            <div className="w-9 h-9 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-800 dark:text-slate-200 text-sm font-semibold flex-shrink-0">
               {displayName[0]?.toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-slate-900 dark:text-white truncate group-hover:text-[#C8856A] transition-colors">{displayName}</p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-medium">{userEmail}</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{displayName}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{userEmail}</p>
             </div>
           </Link>
         </div>
@@ -185,7 +228,8 @@ export function DashboardClient({ reports, userEmail, userName }: DashboardClien
         <Navbar
           userEmail={userEmail}
           userName={userName}
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          onToggleSidebar={handleToggleSidebar}
+          isSidebarOpen={isDesktopPinned}
         />
 
         {/* Main scrollable content */}
@@ -193,33 +237,28 @@ export function DashboardClient({ reports, userEmail, userName }: DashboardClien
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
 
             {/* AI Greeting */}
-            <div className="text-center mb-8">
-              {/* AI Orb */}
-              <div className="relative inline-flex items-center justify-center mb-5">
-                <div className="ai-orb w-20 h-20 rounded-full opacity-90" />
-                <div className="absolute inset-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-sm flex items-center justify-center">
-                  <Activity className="w-8 h-8 text-white drop-shadow-md" />
-                </div>
+            <div className="text-center mb-6">
+              <div className="w-11 h-11 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-xs mx-auto mb-3">
+                <Activity className="w-5 h-5" />
               </div>
-
-              <h1 className="text-3xl sm:text-4xl font-black text-[var(--text-primary)] mb-2">
-                Hello, <span className="gradient-text">{displayName}</span>
+              <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1.5">
+                Hello, {displayName}
               </h1>
-              <p className="text-[var(--text-secondary)] text-lg">
-                How are you feeling today?
+              <p className="text-base text-slate-600 dark:text-slate-300">
+                Describe your symptoms below for an instant clinical assessment.
               </p>
             </div>
 
             {/* Triage Form Card */}
-            <div className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border)] shadow-xl overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
               <TriageForm language={language} />
             </div>
 
             {/* Medical Disclaimer */}
-            <p className="text-center text-xs text-[var(--text-muted)] mt-6 flex items-center justify-center gap-1.5">
-              <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
-              MedAI is informational only. Not a substitute for professional medical advice.
-            </p>
+            <div className="mt-8 max-w-xl mx-auto px-4 py-2.5 rounded-lg bg-slate-100/90 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-center text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 shadow-xs">
+              <ShieldAlert className="w-4 h-4 text-amber-500 flex-shrink-0" />
+              <span>MedAI is informational only. Not a substitute for professional medical advice.</span>
+            </div>
           </div>
         </div>
       </main>
