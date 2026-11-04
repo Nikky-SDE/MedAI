@@ -1,78 +1,57 @@
-<div align="center">
-  <h1>🩺 MedAI: Intelligent Medical Triage & Mapping</h1>
-  <p><strong>A Next.js 15 Full-Stack Application powered by Groq's Llama 3 models for instant, multimodal health analysis.</strong></p>
-  
-  <a href="https://med-ai-mauve.vercel.app" target="_blank">
-    <img src="https://img.shields.io/badge/Live_Demo-Test_MedAI_Now-000000?style=for-the-badge&logo=vercel" alt="Live Demo" />
-  </a>
+# 🩺 MedAI: Multimodal AI Symptom Triage & Clinical Locator
 
-  <p>
-    <img src="https://img.shields.io/badge/Next.js-16.2.1-000000?style=flat-square&logo=next.js" alt="Next.js" />
-    <img src="https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind CSS" />
-    <img src="https://img.shields.io/badge/Supabase-Database-3EC78E?style=flat-square&logo=supabase" alt="Supabase" />
-    <img src="https://img.shields.io/badge/Groq-Llama_3-f3d312?style=flat-square" alt="Groq" />
-    <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
-  </p>
-</div>
+**A Full-Stack Next.js 16 Application powered by Groq (Llama) & Google Gemini for multi-turn symptom triage, FDA medication checks, and WebGL clinic routing.**
+
+[![Next.js](https://img.shields.io/badge/Next.js-16.4-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres_%26_RLS-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![Groq](https://img.shields.io/badge/Groq-Llama_Inference-F55036)](https://groq.com/)
+
+> **Medical Disclaimer:** MedAI is an educational software engineering demonstration designed for informational symptom organization. It is **not** a certified medical device and does not provide clinical diagnoses.
 
 ---
 
 ## 🚀 Overview
 
-**MedAI** is an advanced, portfolio-grade medical guidance application. It leverages the cutting-edge **Groq API** (Llama 3.3 70B & Llama 3.2 11B Vision) to analyze user-reported symptoms and photos, outputting structured medical likelihoods and OTC recommendations. 
-
-The application utilizes a proprietary **Agentic Triage Loop**—making up to 3 rapid API calls to interrogate the user on their symptoms to mathematically increase its diagnostic confidence before generating a final PDF report.
-
-*Disclaimer: This is a software demonstration meant for informational purposes. It is not a substitute for clinical medical advice.*
+One-shot symptom prompts often produce vague or hallucinated health advice because users omit critical context. **MedAI** solves this by implementing a **Stateful Multi-Turn Triage Loop**: instead of guessing immediately, the assistant conducts up to **3 targeted follow-up turns**—incorporating the user's saved health profile, FDA drug interactions, biological sex, and menstrual cycle phase—until it reaches an internal confidence threshold before generating a structured triage report.
 
 ---
 
 ## 🛠️ Tech Stack & Architecture
 
-### Core Frontend
-- **Framework**: Next.js 16 (App Router, Server Actions)
-- **UI & Styling**: React 19, Tailwind CSS v4, Lucide React
-- **Mapping**: Leaflet + MapTiler (Lazy-loaded via `next/dynamic` to drastically reduce initial JS payload)
+### Frontend Layer
+* **Framework:** Next.js 16.4 (App Router, Server Actions, Next.js 16 `proxy.ts` session interception)
+* **UI & Styling:** React 19, Tailwind CSS v4, `next-themes`, `lucide-react`
+* **Geospatial Mapping:** `react-map-gl` + `maplibre-gl` (Lazy-loaded via `next/dynamic` with `ssr: false` to eliminate SSR window crashes and reduce the initial JS bundle)
+* **Voice & Localization:** Web Speech API (`SpeechRecognition`) + custom i18n context supporting English, Hindi (`hi`), Spanish (`es`), and French (`fr`)
+* **Media Optimization:** Client-side HTML5 `<canvas>` WebP compression pipeline to strip EXIF GPS data and cap multimodal payload sizes.
 
-### Backend & AI Layer
-- **Database**: Supabase PostgreSQL (utilizing strict Row Level Security)
-- **Auth**: Supabase Auth (Magic Links / OAuth)
-- **AI Brain**: `groq-sdk` 
-  - *Text Router*: Uses `llama-3.3-70b-versatile` for lightning-fast NLP processing.
-  - *Vision Router*: Automatically falls back to `llama-3.2-11b-vision-preview` if a symptom photo is uploaded via native Base64 encoding.
+### Backend, Data & AI Layer
+* **Database & Auth:** Supabase PostgreSQL, Supabase SSR Auth (Email/Password + PKCE callback), and Supabase Storage with strict Row Level Security (RLS) policies
+* **AI Inference Engine:**
+  * **Primary Low-Latency Triage:** Groq SDK (`llama-3.3-70b-versatile`) with structured JSON extraction (`response_format: { type: 'json_object' }`)
+  * **Multimodal Vision & Fallback Router:** Automatic failover to Google Gemini (`gemini-2.0-flash`) with inline Base64 image encoding for dermatological/visual symptom attachments
+* **External APIs:** Overpass API (OpenStreetMap) for live healthcare nodes, OpenFDA API for pharmacological contraindications.
 
 ---
 
-## ✨ Key Features
+## ✨ Key Engineering Features
 
-- **Agentic Multi-Turn Triage**: Instead of a "one-shot" guess, the AI operates in a smart loop, asking follow-up questions to constrain hallucinatory diagnoses.
-- **Dynamic Female Health Context**: Explicit algorithms compute menstrual phases based on cycle records to feed specific biological context into the AI engine.
-- **Drug Interaction Guardian**: Implicitly cross-references the user's logged `medications_list` before suggesting any OTC treatments.
-- **Local Clinic Mapping**: Renders interactive local maps directly in the UI for users to find the nearest physical doctors.
-- **Multilingual Web Speech API**: Native microphone dictation and translation for English, Hindi, and Spanish speakers.
-- **Client-Side PDF Generation**: Exports cleanly-styled, stamped PDF records of the AI's findings.
+* **Multi-Turn Conversational Triage:** Iteratively narrows down differential possibilities across up to 3 clarifying questions before persisting the final structured JSON report (`condition`, `confidenceLevel`, `explanation`, `isEmergency`, `otcMedicineAdvice`, `recommendation`).
+* **Deterministic Red-Flag Pre-Screening:** Evaluates free-text input against critical emergency patterns (acute chest pain, stroke FAST indicators, severe respiratory distress) to bypass the LLM and trigger immediate emergency protocols.
+* **Pharmacological Context Injection (OpenFDA):** Fetches official boxed warnings from the U.S. National Library of Medicine (OpenFDA API) for the user's logged medications, injecting verified clinical contraindications into the LLM system prompt.
+* **Luteal-Anchored Menstrual Phase Calculator:** Computes current cycle day and biological phase (`Menstrual`, `Follicular`, `Ovulatory`, `Luteal`) based on luteal anchoring to provide dynamic hormone-aware context to the triage engine.
+* **Resilient Multi-Tier Clinic Locator:** Queries live OSM healthcare nodes via the **Overpass API**, falls back to **Nominatim** geocoding if rate-limited, and renders interactive **MapLibre GL** markers with **OSRM** road routing.
+* **Privacy Controls & Print-Ready Reports:** Reports default to private owner-only RLS access with an opt-in public sharing toggle and a print-optimized CSS stylesheet (`@media print`) for clean PDF export.
 
 ---
 
 ## 💻 Getting Started Locally
 
-1. **Clone & Install**
-   ```bash
-   git clone https://github.com/Nikky-SDE/MedAI.git
-   cd MedAI/web
-   npm install
-   ```
-
-2. **Environment Variables**
-   Create a `.env.local` file inside the `web` directory:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   NEXT_PUBLIC_MAPTILER_KEY=your_maptiler_key
-   GROQ_API_KEY=your_groq_api_key
-   ```
-
-
-## 📐 PRD Reference
-For a complete, architectural breakdown of the components designed in this application, please refer to the `PRD.md` file located in the repository root.
+### 1. Clone & Install
+```bash
+git clone [https://github.com/Nikky-SDE/MedAI.git](https://github.com/Nikky-SDE/MedAI.git)
+cd MedAI/web
+npm install
