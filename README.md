@@ -11,6 +11,15 @@
 
 > **Medical Disclaimer:** MedAI is an educational software engineering demonstration designed for informational symptom organization. It is **not** a certified medical device and does not provide clinical diagnoses.
 
+<div align="center">
+  
+  ### [🔴 Live Demo: Test MedAI Here](https://med-ai-mauve.vercel.app/)
+  
+  [![MedAI Dashboard Preview](https://raw.githubusercontent.com/Nikky-SDE/MedAI/main/public/docs/hero-screenshot.png)](https://med-ai-mauve.vercel.app/)
+  
+  *MedAI Triage Dashboard: AI Agent interface, symptom processing, and clinical map.*
+</div>
+
 ---
 
 ## 🚀 Overview
@@ -45,6 +54,41 @@ One-shot symptom prompts often produce vague or hallucinated health advice becau
 * **Luteal-Anchored Menstrual Phase Calculator:** Computes current cycle day and biological phase (`Menstrual`, `Follicular`, `Ovulatory`, `Luteal`) based on luteal anchoring to provide dynamic hormone-aware context to the triage engine.
 * **Resilient Multi-Tier Clinic Locator:** Queries live OSM healthcare nodes via the **Overpass API**, falls back to **Nominatim** geocoding if rate-limited, and renders interactive **MapLibre GL** markers with **OSRM** road routing.
 * **Privacy Controls & Print-Ready Reports:** Reports default to private owner-only RLS access with an opt-in public sharing toggle and a print-optimized CSS stylesheet (`@media print`) for clean PDF export.
+
+---
+
+## 📸 Application Showcase
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>Agentic Triage Loop</strong><br/>
+      <img src="https://raw.githubusercontent.com/Nikky-SDE/MedAI/main/public/docs/triage-loop.gif" width="400" alt="Triage Loop"/>
+    </td>
+    <td align="center">
+      <strong>Interactive Clinic Routing</strong><br/>
+      <img src="https://raw.githubusercontent.com/Nikky-SDE/MedAI/main/public/docs/map-routing.png" width="400" alt="Map Routing"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>FDA Drug Interaction Guardian</strong><br/>
+      <img src="https://raw.githubusercontent.com/Nikky-SDE/MedAI/main/public/docs/fda-warnings.png" width="400" alt="FDA Warnings"/>
+    </td>
+    <td align="center">
+      <strong>Structured PDF Report Export</strong><br/>
+      <img src="https://raw.githubusercontent.com/Nikky-SDE/MedAI/main/public/docs/pdf-report.png" width="400" alt="PDF Report"/>
+    </td>
+  </tr>
+</table>
+
+---
+
+## ⚡ Performance
+
+MedAI is built with a focus on web vitals and minimal client-side bloat.
+* **Lighthouse Score:** 94 Performance, 100 Accessibility, 100 Best Practices, and 100 SEO.
+* **Bundle Optimization:** The heavy MapLibre GL WebGL engine and OSRM routing logic are strictly lazy-loaded via Next.js Dynamic Imports (`ssr: false`) to keep the initial dashboard JS payload heavily reduced.
 
 ---
 
