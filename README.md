@@ -31,7 +31,7 @@
 ## 🎬 Application Walkthrough
 
 <!-- DEMO PLACEHOLDER: Place a 30-second recording or screenshot of the triage flow at /public/demo.gif -->
-```
+```text
 [ User describes symptom ] ──► [ Server-Owned Triage Loop (≤3 Turns) ] ──► [ Structured Assessment + Clinic Map ]
 ```
 
@@ -118,7 +118,7 @@ graph TD
 
 ## 📊 Evaluation & Empirical Benchmarks
 
-Evaluated across a balanced dataset of 40 author-written clinical vignettes across 4 languages in [`eval/vignettes.json`](file:///c:/Users/Lenovo/Desktop/MedAI/eval/vignettes.json) via `npm run eval --prefix web`:
+Evaluated across a balanced dataset of 40 author-written clinical vignettes across 4 languages in [`eval/vignettes.json`](eval/vignettes.json) via `npm run eval --prefix web`:
 
 | Metric | Measured Value | Benchmark Target | Verdict |
 |---|---|---|---|
@@ -129,7 +129,7 @@ Evaluated across a balanced dataset of 40 author-written clinical vignettes acro
 | **Latency p50** | **9 ms** | < 2,500 ms | ✅ Passed |
 | **Latency p95** | **19 ms** | < 5,000 ms | ✅ Passed |
 
-*Detailed confusion matrices, methodology, and per-vignette outcomes are documented in [`docs/EVAL.md`](file:///c:/Users/Lenovo/Desktop/MedAI/docs/EVAL.md).*
+*Detailed confusion matrices, methodology, and per-vignette outcomes are documented in [`docs/EVAL.md`](docs/EVAL.md).*
 
 ---
 
@@ -146,7 +146,7 @@ Measurements captured via Next.js production builds (`next build --webpack`):
 | Image Upload Transfer | 8.0 MB – 15.0 MB | **140 KB – 260 KB** | **~96% bandwidth savings** |
 | Clinic Lookup Latency | 2,000ms – 4,000ms | **< 5 ms** (Cache hit) | **> 99.8% reduction** |
 
-*Detailed bundle analysis and Lighthouse CLI instructions are documented in [`docs/PERFORMANCE.md`](file:///c:/Users/Lenovo/Desktop/MedAI/docs/PERFORMANCE.md).*
+*Detailed bundle analysis and Lighthouse CLI instructions are documented in [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).*
 
 ---
 
@@ -158,14 +158,14 @@ Measurements captured via Next.js production builds (`next build --webpack`):
 - **Private Storage**: Bucket configured `public: false`; access granted strictly via 1-hour signed URLs.
 - **Rate Limiting**: Enforced at 30 triage turns/hr and 10 reports/day with HTTP 429 Retry-After metadata.
 
-*Complete security policies and external AI disclosures are documented in [`SECURITY.md`](file:///c:/Users/Lenovo/Desktop/MedAI/SECURITY.md).*
+*Complete security policies and external AI disclosures are documented in [`SECURITY.md`](SECURITY.md).*
 
 ---
 
 ## 🧪 Testing & Continuous Integration
 
 MedAI maintains rigorous test coverage enforced via **GitHub Actions CI** on every push and pull request:
-- **87 Unit & Safety Tests** ([Vitest](file:///c:/Users/Lenovo/Desktop/MedAI/web/vitest.config.mts)):
+- **87 Unit & Safety Tests** ([Vitest](web/vitest.config.mts)):
   - Red-flag triage & 4-locale emergency matrix (44 tests across 6 emergency categories x 4 locales + negations)
   - Menstrual cycle calendar & timezone safety (9 tests)
   - OTC drug interactions & contraindications (6 tests)
@@ -215,7 +215,7 @@ npm run test:e2e --prefix web
 
 ### 2. Clone & Install
 ```bash
-git clone https://github.com/Nikky-SDE/MedAI.git
+git clone [https://github.com/Nikky-SDE/MedAI.git](https://github.com/Nikky-SDE/MedAI.git)
 cd MedAI/web
 npm install
 ```
@@ -229,7 +229,7 @@ cp .env.example .env.local
 Configure your credentials:
 ```env
 # Supabase Configuration (Required)
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=[https://your-project-ref.supabase.co](https://your-project-ref.supabase.co)
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key-here
 
 # AI Inference Layer
