@@ -4,6 +4,10 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function toggleReportPublic(reportId: string, currentStatus: boolean) {
+  if (!reportId || !/^[0-9a-fA-F-]{36}$/.test(reportId)) {
+    throw new Error("Invalid report ID format")
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

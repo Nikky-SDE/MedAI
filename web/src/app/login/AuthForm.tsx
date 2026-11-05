@@ -15,9 +15,11 @@ export function AuthForm({ error, message }: AuthFormProps) {
   return (
     <div className="w-full">
       {/* Segmented Tab Switcher */}
-      <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg mb-6 border border-slate-200 dark:border-slate-700">
+      <div role="tablist" aria-label="Authentication Options" className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg mb-6 border border-slate-200 dark:border-slate-700">
         <button
           type="button"
+          role="tab"
+          aria-selected={activeTab === 'login'}
           onClick={() => setActiveTab('login')}
           className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
             activeTab === 'login'
@@ -29,6 +31,8 @@ export function AuthForm({ error, message }: AuthFormProps) {
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={activeTab === 'signup'}
           onClick={() => setActiveTab('signup')}
           className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
             activeTab === 'signup'

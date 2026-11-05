@@ -12,12 +12,14 @@ interface TriageFormProps {
 }
 
 export function TriageForm({ language }: TriageFormProps) {
+  const [sessionId, setSessionId] = useState<string | null>(null)
   const [turnCount, setTurnCount] = useState(0)
   const [confidenceScore, setConfidenceScore] = useState(0)
   const [messages, setMessages] = useState<{ role: string; text: string }[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isTriaging, setIsTriaging] = useState(false)
   const [isDone, setIsDone] = useState(false)
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null)
   const [showImageUpload, setShowImageUpload] = useState(false)
   const [hasImage, setHasImage] = useState(false)
 
@@ -34,37 +36,63 @@ export function TriageForm({ language }: TriageFormProps) {
     if (!inputValue.trim()) return
 
     setIsTriaging(true)
-    const userMessage = { role: 'user', text: inputValue }
+    setRateLimitError(null)
+    const currentInput = inputValue.trim()
+    const userMessage = { role: 'user', text: currentInput }
     const updatedMessages = [...messages, userMessage]
     setMessages(updatedMessages)
     setInputValue('')
     setTimeout(scrollToBottom, 50)
 
     try {
+      // Server-owned triage: send only new answer and sessionId
       const res = await fetch('/api/triage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ messages: updatedMessages, language }),
+        body: JSON.stringify({ sessionId, message: currentInput, language }),
       })
+
+      if (res.status === 429) {
+        const errJson = await res.json().catch(() => ({}))
+        const errorText = errJson.message || 'Hourly request limit reached. Please wait before asking further questions.'
+        setRateLimitError(errorText)
+        setIsTriaging(false)
+        return
+      }
 
       const contentType = res.headers.get('content-type')
       if (res.ok && contentType?.includes('application/json')) {
         const data = await res.json()
-        const newScore = data.confidenceScore || confidenceScore
+
+        if (data.sessionId) {
+          setSessionId(data.sessionId)
+        }
+
+        const newScore = data.certaintyScore ?? data.confidenceScore ?? confidenceScore
         setConfidenceScore(newScore)
+        setTurnCount(data.turnCount ?? (turnCount + 1))
 
-        const nextTurn = turnCount + 1
-        setTurnCount(nextTurn)
+        if (data.isEmergency) {
+          setIsDone(true)
+          setConfidenceScore(100)
+          const emergencyText = data.emergencyReason
+            ? `⚠️ CRITICAL EMERGENCY DETECTED: ${data.emergencyReason}. Directing to emergency response...`
+            : '⚠️ CRITICAL EMERGENCY DETECTED: Please seek immediate emergency medical care.'
+          const alertMsg = { role: 'ai', text: emergencyText }
+          setMessages([...updatedMessages, alertMsg])
+          setTimeout(() => formRef.current?.requestSubmit(), 800)
+          return
+        }
 
-        // Stop after 3 follow-up questions to prevent an infinite loop, or if AI reaches high confidence
-        if (newScore >= 85 || nextTurn >= 3) {
+        // Server decides when triage is complete based on slot completeness or turn limits
+        if (data.isComplete || !data.next_question) {
           setIsDone(true)
           const doneMsg = { role: 'ai', text: t('triage_complete', language) }
           setMessages([...updatedMessages, doneMsg])
           setTimeout(() => formRef.current?.requestSubmit(), 600)
         } else {
-          const aiQuestion = data.next_question || t('greeting', language)
+          const aiQuestion = data.next_question
           const aiMsg = { role: 'ai', text: aiQuestion }
           setMessages([...updatedMessages, aiMsg])
           setTimeout(scrollToBottom, 50)
@@ -81,16 +109,13 @@ export function TriageForm({ language }: TriageFormProps) {
     }
   }
 
-  const compiledSymptoms =
-    messages.map(m => `[${m.role.toUpperCase()}]: ${m.text}`).join('\n') +
-    (inputValue ? `\n[USER]: ${inputValue}` : '')
-
   const suggestions = getSuggestions(language)
   const showSuggestions = messages.length === 0 && !inputValue
 
   return (
     <form ref={formRef} action={analyzeSymptoms} onSubmit={handleTriageSubmit} className="flex flex-col p-5 sm:p-6 gap-5">
-      <input type="hidden" name="symptoms" value={compiledSymptoms} />
+      <input type="hidden" name="sessionId" value={sessionId || ''} />
+      <input type="hidden" name="symptoms" value={inputValue || messages[0]?.text || ''} />
       <input type="hidden" name="language" value={language} />
 
       {/* ===== Confidence Meter ===== */}
@@ -177,6 +202,13 @@ export function TriageForm({ language }: TriageFormProps) {
             placeholder={`${t('medications', language)} (${t('medications_placeholder', language)})`}
             disabled={isTriaging || isDone}
           />
+        </div>
+      )}
+
+      {/* ===== Rate Limit Notice ===== */}
+      {rateLimitError && (
+        <div className="rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 p-3 text-sm text-amber-800 dark:text-amber-200">
+          {rateLimitError}
         </div>
       )}
 

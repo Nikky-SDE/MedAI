@@ -3,4 +3,9 @@
 .env.local
 !.env.example
 node_modules/
+.next/
+coverage/
+playwright-report/
+test-results/
+.playwright-browsers/
 .DS_Store

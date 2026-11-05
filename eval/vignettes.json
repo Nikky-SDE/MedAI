@@ -1,0 +1,343 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "createdAt": "2026-11-05",
+    "dataset": "MedAI Clinical Triage Benchmark Dataset",
+    "disclaimer": "NOT CLINICALLY VALIDATED. These 40 vignettes are author-written synthetic cases created strictly for software architecture evaluation, prompt regression testing, and pipeline benchmarking. Do not use for clinical decision-making.",
+    "totalVignettes": 40,
+    "distribution": {
+      "emergency": 10,
+      "urgent": 10,
+      "see-doctor": 10,
+      "self-care": 10
+    },
+    "languages": {
+      "en": 28,
+      "hi": 4,
+      "es": 4,
+      "fr": 4
+    }
+  },
+  "vignettes": [
+    {
+      "id": "vig-001",
+      "language": "en",
+      "category": "cardiac",
+      "text": "I am a 58-year-old male experiencing sudden severe crushing chest pain radiating down my left arm and up to my jaw. I am breaking out in a cold sweat and feel nauseous.",
+      "expected_urgency": "emergency",
+      "notes": "Classic acute myocardial infarction presentation. Must trigger immediate emergency protocol."
+    },
+    {
+      "id": "vig-002",
+      "language": "en",
+      "category": "neurological",
+      "text": "My 67-year-old mother suddenly developed facial drooping on the right side and cannot raise her right arm. When she tries to speak, her words are completely slurred and unintelligible.",
+      "expected_urgency": "emergency",
+      "notes": "Acute ischemic or hemorrhagic stroke (FAST criteria: Face, Arm, Speech). Emergency response required."
+    },
+    {
+      "id": "vig-003",
+      "language": "en",
+      "category": "respiratory",
+      "text": "I have severe asthma and my rescue inhaler is not working. I am gasping for air, cannot speak in full sentences, and my fingernails and lips are turning blue.",
+      "expected_urgency": "emergency",
+      "notes": "Severe acute respiratory distress with cyanosis and impending respiratory failure."
+    },
+    {
+      "id": "vig-004",
+      "language": "en",
+      "category": "allergy",
+      "text": "I accidentally ate a cookie containing peanuts 10 minutes ago. My lips and tongue are swelling rapidly, my throat feels like it is closing, and I am wheezing loudly.",
+      "expected_urgency": "emergency",
+      "notes": "Acute anaphylaxis with imminent airway obstruction."
+    },
+    {
+      "id": "vig-005",
+      "language": "en",
+      "category": "trauma",
+      "text": "Deep laceration on upper thigh from a circular saw accident. Bright red blood is spurting continuously and heavy pressure with a towel has failed to slow the bleeding.",
+      "expected_urgency": "emergency",
+      "notes": "Arterial hemorrhage with high risk of hypovolemic shock within minutes."
+    },
+    {
+      "id": "vig-006",
+      "language": "en",
+      "category": "psychiatric",
+      "text": "I feel hopeless and overwhelmed. I have actively gathered pills and wrote a letter because I want to end my life tonight.",
+      "expected_urgency": "emergency",
+      "notes": "Acute suicidal crisis with means and intent. Immediate safety and crisis intervention required."
+    },
+    {
+      "id": "vig-007",
+      "language": "hi",
+      "category": "cardiac",
+      "text": "मरीज को अचानक सीने में बहुत तेज दर्द और भारीपन महसूस हो रहा है, जो बाएं हाथ तक जा रहा है और सांस लेने में कठिनाई हो रही है।",
+      "expected_urgency": "emergency",
+      "notes": "Hindi cardiac emergency presentation (crushing chest pain radiating to left arm)."
+    },
+    {
+      "id": "vig-008",
+      "language": "es",
+      "category": "respiratory",
+      "text": "Tengo una dificultad severa para respirar, me falta el aire completamente y siento que me estoy asfixiando desde hace 15 minutos.",
+      "expected_urgency": "emergency",
+      "notes": "Spanish acute respiratory distress with sensation of suffocation."
+    },
+    {
+      "id": "vig-009",
+      "language": "fr",
+      "category": "allergy",
+      "text": "Après une piqûre de guêpe, ma gorge se serre, j'ai un gonflement sévère de la langue et j'ai d'énormes difficultés à avaler et respirer.",
+      "expected_urgency": "emergency",
+      "notes": "French anaphylaxis presentation following insect venom exposure."
+    },
+    {
+      "id": "vig-010",
+      "language": "en",
+      "category": "neurological",
+      "text": "Sudden onset of the worst headache of my life, like a thunderclap inside my head that peaked within seconds, accompanied by vomiting and neck stiffness.",
+      "expected_urgency": "emergency",
+      "notes": "Thunderclap headache suggestive of subarachnoid hemorrhage (aneurysm rupture)."
+    },
+    {
+      "id": "vig-011",
+      "language": "en",
+      "category": "infectious",
+      "text": "High fever of 103.5°F for 24 hours with severe stiff neck, extreme sensitivity to light (photophobia), confusion, and a new purple non-blanching skin rash.",
+      "expected_urgency": "urgent",
+      "notes": "Classic meningeal triad with purpura fulminans suggestive of acute bacterial meningitis. Needs urgent ED evaluation."
+    },
+    {
+      "id": "vig-012",
+      "language": "en",
+      "category": "gastrointestinal",
+      "text": "Severe sharp pain in the right lower quadrant of my abdomen that started around my navel 12 hours ago. It hurts intensely when coughing or walking, with fever and nausea.",
+      "expected_urgency": "urgent",
+      "notes": "Acute appendicitis presentation with localized peritoneal irritation."
+    },
+    {
+      "id": "vig-013",
+      "language": "en",
+      "category": "urological",
+      "text": "Sudden excruciating flank pain radiating into my groin that comes in waves (colic). I noticed pink/bloody urine and cannot find any comfortable position to sit or lie.",
+      "expected_urgency": "urgent",
+      "notes": "Acute nephrolithiasis (renal colic) with hematuria requiring urgent imaging and analgesia."
+    },
+    {
+      "id": "vig-014",
+      "language": "en",
+      "category": "orthopedic",
+      "text": "Fell from a ladder onto my left wrist. Severe deformity with wrist bent at an unnatural angle (dinner fork deformity), extreme swelling, and inability to move fingers without intense pain.",
+      "expected_urgency": "urgent",
+      "notes": "Displaced Colles fracture or wrist dislocation requiring urgent reduction and splinting."
+    },
+    {
+      "id": "vig-015",
+      "language": "en",
+      "category": "infectious",
+      "text": "Small cut on my lower leg from 3 days ago is now rapidly spreading, red, hot to touch, swollen, with red streaks traveling up toward my knee and a temperature of 102°F.",
+      "expected_urgency": "urgent",
+      "notes": "Progressive cellulitis with lymphangitic streaking and systemic signs of infection."
+    },
+    {
+      "id": "vig-016",
+      "language": "en",
+      "category": "ophthalmology",
+      "text": "Sudden onset of dark floaters and flashes of light in my left eye, followed by what looks like a dark curtain falling over my peripheral field of vision.",
+      "expected_urgency": "urgent",
+      "notes": "Acute retinal detachment requiring urgent ophthalmologic intervention to preserve vision."
+    },
+    {
+      "id": "vig-017",
+      "language": "hi",
+      "category": "gastrointestinal",
+      "text": "पेट के दाहिने निचले हिस्से में बहुत तेज असहनीय दर्द है, साथ में 102 डिग्री बुखार है और उल्टी हो रही है। चलने में भी बहुत दर्द हो रहा है।",
+      "expected_urgency": "urgent",
+      "notes": "Hindi acute lower right abdominal pain with fever (appendicitis presentation)."
+    },
+    {
+      "id": "vig-018",
+      "language": "es",
+      "category": "infectious",
+      "text": "Fiebre muy alta de 39.5°C con rigidez severa en el cuello, confusión y dolor de cabeza intenso que no cede con analgésicos.",
+      "expected_urgency": "urgent",
+      "notes": "Spanish presentation of suspected meningitis."
+    },
+    {
+      "id": "vig-019",
+      "language": "fr",
+      "category": "orthopedic",
+      "text": "Chute de vélo avec déformation visible de la clavicule, douleur aiguë intense au moindre mouvement et impossibilité de bouger le bras.",
+      "expected_urgency": "urgent",
+      "notes": "French acute clavicle fracture presentation."
+    },
+    {
+      "id": "vig-020",
+      "language": "en",
+      "category": "gastrointestinal",
+      "text": "Severe vomiting and watery diarrhea for 36 hours. I have not been able to keep any liquids down, have not urinated in 14 hours, and feel extremely dizzy whenever I stand up.",
+      "expected_urgency": "urgent",
+      "notes": "Severe dehydration with orthostasis secondary to gastroenteritis requiring IV rehydration."
+    },
+    {
+      "id": "vig-021",
+      "language": "en",
+      "category": "respiratory",
+      "text": "Dry, hacking cough that has persisted for over 3 weeks. No fever, but I am coughing constantly throughout the night and feel mild fatigue during the day.",
+      "expected_urgency": "see-doctor",
+      "notes": "Subacute / chronic cough (>3 weeks) requiring outpatient workup (post-viral, cough variant asthma, or GERD)."
+    },
+    {
+      "id": "vig-022",
+      "language": "en",
+      "category": "endocrine",
+      "text": "Over the past 2 months, I have noticed unintentional weight loss of 15 pounds despite eating normally, frequent urination throughout the night, and feeling constantly thirsty.",
+      "expected_urgency": "see-doctor",
+      "notes": "Classic presentation of new-onset Diabetes Mellitus (polyuria, polydipsia, weight loss) requiring outpatient diagnostic labs."
+    },
+    {
+      "id": "vig-023",
+      "language": "en",
+      "category": "rheumatology",
+      "text": "Morning stiffness in both hands and wrists lasting over an hour every morning for the past month, with visible swelling in the knuckle joints.",
+      "expected_urgency": "see-doctor",
+      "notes": "Symmetric inflammatory polyarthritis suggestive of early Rheumatoid Arthritis; needs outpatient rheumatology evaluation."
+    },
+    {
+      "id": "vig-024",
+      "language": "en",
+      "category": "dermatology",
+      "text": "A dark mole on my upper back that has changed shape over the past 3 months. It has irregular borders, multiple shades of brown and black, and has grown to about 8mm.",
+      "expected_urgency": "see-doctor",
+      "notes": "Suspicious pigmented cutaneous lesion meeting ABCDE melanoma criteria. Outpatient dermatologic biopsy indicated."
+    },
+    {
+      "id": "vig-025",
+      "language": "en",
+      "category": "otolaryngology",
+      "text": "Persistent dull earache in the left ear for 5 days with muffled hearing and a feeling of fullness, following a mild cold last week. No high fever or drainage.",
+      "expected_urgency": "see-doctor",
+      "notes": "Acute otitis media or eustachian tube dysfunction requiring otoscopic examination and possible antibiotics."
+    },
+    {
+      "id": "vig-026",
+      "language": "en",
+      "category": "gastrointestinal",
+      "text": "Frequent burning pain behind my breastbone (heartburn) occurring 3 to 4 times a week for the past month, typically worse after eating spicy food and when lying down.",
+      "expected_urgency": "see-doctor",
+      "notes": "Chronic gastroesophageal reflux disease (GERD) requiring primary care evaluation and acid suppression therapy."
+    },
+    {
+      "id": "vig-027",
+      "language": "hi",
+      "category": "endocrine",
+      "text": "पिछले दो महीने से लगातार बहुत ज्यादा प्यास लग रही है, बार-बार पेशाब आ रहा है और बिना किसी कारण के 5 किलो वजन कम हो गया है।",
+      "expected_urgency": "see-doctor",
+      "notes": "Hindi diabetic presentation (polydipsia, polyuria, weight loss)."
+    },
+    {
+      "id": "vig-028",
+      "language": "es",
+      "category": "dermatology",
+      "text": "He notado un lunar en el hombro que ha cambiado de color y tamaño en los últimos dos meses, con bordes asimétricos y picazón ocasional.",
+      "expected_urgency": "see-doctor",
+      "notes": "Spanish presentation of suspicious changing nevus."
+    },
+    {
+      "id": "vig-029",
+      "language": "fr",
+      "category": "respiratory",
+      "text": "Une toux sèche qui dure depuis presque un mois, sans fièvre mais qui m'empêche de dormir correctement la nuit.",
+      "expected_urgency": "see-doctor",
+      "notes": "French subacute persistent cough requiring consultation."
+    },
+    {
+      "id": "vig-030",
+      "language": "en",
+      "category": "urological",
+      "text": "Burning sensation and discomfort when urinating for the past 2 days, accompanied by increased urinary frequency and pelvic pressure. No fever, back pain, or nausea.",
+      "expected_urgency": "see-doctor",
+      "notes": "Uncomplicated lower urinary tract infection (cystitis) requiring urinalysis and targeted antibiotics."
+    },
+    {
+      "id": "vig-031",
+      "language": "en",
+      "category": "respiratory",
+      "text": "Mild clear runny nose, occasional sneezing, and slight scratchy throat that started yesterday. No fever, no body aches, appetite and energy levels are normal.",
+      "expected_urgency": "self-care",
+      "notes": "Common viral upper respiratory infection (coryza / cold). Appropriate for rest, hydration, and saline rinse."
+    },
+    {
+      "id": "vig-032",
+      "language": "en",
+      "category": "neurological",
+      "text": "Mild dull, band-like tension across my forehead after working on a laptop for 8 hours without breaks. No nausea, no vision changes, no light sensitivity.",
+      "expected_urgency": "self-care",
+      "notes": "Tension-type headache related to screen fatigue. Managed with screen breaks, hydration, and optional mild analgesic."
+    },
+    {
+      "id": "vig-033",
+      "language": "en",
+      "category": "musculoskeletal",
+      "text": "Mild muscle soreness in quadriceps and calves 24 hours after my first strenuous gym workout in several months. No joint swelling or inability to walk.",
+      "expected_urgency": "self-care",
+      "notes": "Delayed onset muscle soreness (DOMS). Self-limited condition benefiting from gentle stretching and hydration."
+    },
+    {
+      "id": "vig-034",
+      "language": "en",
+      "category": "trauma",
+      "text": "Minor shallow paper cut on the index finger. Bleeding stopped immediately with 30 seconds of pressure. No foreign objects, clean edge, normal finger sensation.",
+      "expected_urgency": "self-care",
+      "notes": "Minor superficial skin break. Managed with soap and water and a clean bandage."
+    },
+    {
+      "id": "vig-035",
+      "language": "en",
+      "category": "dermatology",
+      "text": "Mild localized sunburn on shoulders after spending 45 minutes at the park without sunscreen. Skin is slightly pink and warm to touch, but no blistering or systemic symptoms.",
+      "expected_urgency": "self-care",
+      "notes": "First-degree superficial sunburn. Managed with cool compresses, aloe vera, and sun avoidance."
+    },
+    {
+      "id": "vig-036",
+      "language": "en",
+      "category": "gastrointestinal",
+      "text": "Mild bloating and occasional gas after eating a large bowl of bean chili and cabbage for lunch. No abdominal pain, no fever, no nausea, normal bowel movement this morning.",
+      "expected_urgency": "self-care",
+      "notes": "Dietary flatulence and postprandial fullness. Reassurance and dietary pacing."
+    },
+    {
+      "id": "vig-037",
+      "language": "hi",
+      "category": "respiratory",
+      "text": "कल से हल्की नाक बह रही है और गले में मामूली खराश है। कोई बुखार नहीं है और सामान्य रूप से काम कर पा रहा हूँ।",
+      "expected_urgency": "self-care",
+      "notes": "Hindi mild common cold presentation suitable for home care."
+    },
+    {
+      "id": "vig-038",
+      "language": "es",
+      "category": "respiratory",
+      "text": "Tengo un resfriado común leve desde ayer con algo de congestión nasal y estornudos. Sin fiebre ni malestar general importante.",
+      "expected_urgency": "self-care",
+      "notes": "Spanish mild common cold suitable for symptomatic self-care."
+    },
+    {
+      "id": "vig-039",
+      "language": "fr",
+      "category": "musculoskeletal",
+      "text": "Légères courbatures dans les jambes après une randonnée hier. Aucune douleur articulaire ni gonflement.",
+      "expected_urgency": "self-care",
+      "notes": "French mild post-exercise muscle soreness (DOMS)."
+    },
+    {
+      "id": "vig-040",
+      "language": "en",
+      "category": "dermatology",
+      "text": "A single small, non-itchy red mosquito bite on my forearm from yesterday evening. No spreading redness, no warmth, no swelling.",
+      "expected_urgency": "self-care",
+      "notes": "Minor localized insect bite. Managed with cold compress or topical hydrocortisone if itchy."
+    }
+  ]
+}
