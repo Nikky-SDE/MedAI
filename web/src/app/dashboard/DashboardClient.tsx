@@ -31,9 +31,19 @@ interface DashboardClientProps {
   reports: Report[]
   userEmail: string | null
   userName: string | null
+  currentPage?: number
+  totalPages?: number
+  totalReports?: number
 }
 
-export function DashboardClient({ reports, userEmail, userName }: DashboardClientProps) {
+export function DashboardClient({
+  reports,
+  userEmail,
+  userName,
+  currentPage = 1,
+  totalPages = 1,
+  totalReports = reports.length,
+}: DashboardClientProps) {
   const { language } = useLanguage()
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false) // Mobile drawer
@@ -202,6 +212,40 @@ export function DashboardClient({ reports, userEmail, userName }: DashboardClien
                     </button>
                   </div>
                 ))
+              )}
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex flex-col gap-1.5 pt-3 px-1 border-t border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <Link
+                      href={`/dashboard?page=${currentPage - 1}`}
+                      className={`px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 font-medium ${
+                        currentPage <= 1
+                          ? 'opacity-30 pointer-events-none'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200'
+                      }`}
+                    >
+                      Previous
+                    </Link>
+                    <span className="font-medium text-slate-600 dark:text-slate-300">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <Link
+                      href={`/dashboard?page=${currentPage + 1}`}
+                      className={`px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 font-medium ${
+                        currentPage >= totalPages
+                          ? 'opacity-30 pointer-events-none'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200'
+                      }`}
+                    >
+                      Next
+                    </Link>
+                  </div>
+                  <p className="text-[11px] text-center text-slate-400">
+                    Total {totalReports} assessments recorded
+                  </p>
+                </div>
               )}
             </div>
           )}

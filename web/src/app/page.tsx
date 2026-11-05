@@ -50,7 +50,7 @@ export default async function Home() {
         <div className="flex-1 text-center lg:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 text-xs sm:text-sm font-medium text-blue-700 dark:text-blue-300 mb-6 shadow-xs">
             <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
-            Clinical AI Smart Triage · Live Diagnostic Engine
+            Preliminary AI Triage · Educational Health Assistant
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.1] mb-6">
@@ -59,7 +59,7 @@ export default async function Home() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
-            Describe your symptoms or upload clinical imagery. MedAI conducts an adaptive triage assessment, building diagnostic confidence before delivering an actionable clinical health report.
+            Describe your symptoms or attach a reference photo. MedAI conducts an adaptive follow-up triage session to help organize your symptoms before you consult a licensed medical professional.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
@@ -76,12 +76,12 @@ export default async function Home() {
             </div>
           </div>
 
-          {/* Stats row */}
+          {/* Architecture & Feature highlights row (honest, verifiable specs) */}
           <div className="flex items-center gap-6 sm:gap-10 mt-10 justify-center lg:justify-start flex-wrap pt-6 border-t border-slate-200 dark:border-slate-800">
             {[
-              { label: 'Active Patients', value: '12,000+' },
-              { label: 'Reports Compiled', value: '50,000+' },
-              { label: 'Diagnostic Accuracy', value: '94.8%' },
+              { label: 'Clarification Loop', value: 'Up to 3 Turns' },
+              { label: 'Supported Locales', value: '4 Languages' },
+              { label: 'Input Channels', value: 'Text & Photos' },
             ].map(stat => (
               <div key={stat.label}>
                 <div className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{stat.value}</div>
@@ -101,10 +101,10 @@ export default async function Home() {
       <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20 pt-8">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-3">
-            Enterprise Clinical Intelligence
+            Intelligent Preliminary Triage
           </h2>
           <p className="text-base text-slate-600 dark:text-slate-300">
-            Engineered for clinical triage accuracy, patient privacy, and rapid differential analysis.
+            Engineered for structured symptom guidance, patient privacy, and clear clinical summaries.
           </p>
         </div>
 
@@ -112,18 +112,18 @@ export default async function Home() {
           {[
             {
               icon: Activity,
-              title: 'Multimodal Clinical Analysis',
-              desc: 'Simultaneously analyzes clinical photos and natural-language symptoms using high-precision vision AI for granular differential diagnosis.',
+              title: 'Multimodal Symptom Intake',
+              desc: 'Analyze natural language symptoms alongside reference symptom photos to provide contextualized preliminary assessments.',
             },
             {
               icon: Zap,
-              title: 'Adaptive Smart Triage Loop',
-              desc: 'Engages in up to 3 targeted follow-up questions, actively raising diagnostic confidence before finalizing your clinical report.',
+              title: 'Adaptive Follow-Up Loop',
+              desc: 'Engages in up to 3 targeted clarifying questions, narrowing down diagnostic context before compiling your summary report.',
             },
             {
               icon: ShieldCheck,
-              title: 'Enterprise-Grade Privacy',
-              desc: 'Patient health records are protected with Row Level Security (RLS) on Supabase with zero unauthenticated data exposure.',
+              title: 'Row-Level Data Security',
+              desc: 'Patient health records and profile details are protected with Supabase Row Level Security (RLS) scoped strictly to authenticated users.',
             },
           ].map(feature => (
             <div

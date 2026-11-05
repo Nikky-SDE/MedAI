@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { AlertTriangle, Home, Activity, ShieldAlert, Pill, FileText, Stethoscope, ArrowLeft, Plus, Calendar, Image as ImageIcon } from 'lucide-react'
 import { DownloadPdfButton } from './DownloadPdfButton'
 import { MapLoader } from './MapLoader'
@@ -47,6 +48,19 @@ export default async function ReportPage(props: { params: Promise<{ id: string }
     } else {
       redirect('/dashboard?error=' + encodeURIComponent('You do not have permission to view this private health report.'))
     }
+  }
+
+  // Generate a signed URL for secure private bucket viewing (valid for 1 hour)
+  let displayImageUrl: string | null = null
+  if (report.image_url) {
+    let storagePath = report.image_url
+    if (storagePath.includes('/symptoms/')) {
+      storagePath = storagePath.split('/symptoms/')[1]
+    }
+    const { data: signedData } = await supabase.storage
+      .from('symptoms')
+      .createSignedUrl(storagePath, 3600)
+    displayImageUrl = signedData?.signedUrl || report.image_url
   }
 
   let aiResponse = report.ai_response
@@ -156,7 +170,7 @@ export default async function ReportPage(props: { params: Promise<{ id: string }
             </div>
             {aiResponse?.confidenceLevel && (
               <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-sm font-medium ring-1 ring-inset ${confColor}`}>
-                {aiResponse.confidenceLevel} Confidence
+                {aiResponse.confidenceLevel} Certainty
               </span>
             )}
           </div>
@@ -170,8 +184,8 @@ export default async function ReportPage(props: { params: Promise<{ id: string }
               </div>
 
               <div className="rounded-md p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">AI Confidence</span>
-                <span className="text-xl font-bold text-slate-900 dark:text-white">{aiResponse?.confidenceLevel || 'N/A'}</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Model-Reported Certainty</span>
+                <span className="text-xl font-bold text-slate-900 dark:text-white">{aiResponse?.certaintyLevel || aiResponse?.confidenceLevel || 'N/A'}</span>
               </div>
             </div>
 
@@ -191,26 +205,27 @@ export default async function ReportPage(props: { params: Promise<{ id: string }
               <section>
                 <div className="flex items-center gap-2 mb-2">
                   <Pill className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Potential OTC Support</h3>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Curated OTC Interaction Guidance (Limited Coverage)</h3>
                 </div>
                 <div className="bg-slate-50/60 dark:bg-slate-800 p-4 rounded-md border border-slate-200 dark:border-slate-700">
-                  <p className="text-base text-slate-800 dark:text-slate-200 leading-relaxed font-normal">{aiResponse?.otcMedicineAdvice || 'No OTC recommendations.'}</p>
+                  <p className="text-base text-slate-800 dark:text-slate-200 leading-relaxed font-normal whitespace-pre-line">{aiResponse?.otcMedicineAdvice || 'No OTC recommendations.'}</p>
                 </div>
               </section>
 
               {/* Attached Symptom Photo (if present) */}
-              {report.image_url && (
+              {displayImageUrl && (
                 <section>
                   <div className="flex items-center gap-2 mb-2">
                     <ImageIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Attached Symptom Photo</h3>
                   </div>
                   <div className="bg-slate-50/60 dark:bg-slate-800 p-3 rounded-md border border-slate-200 dark:border-slate-700 inline-block">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={report.image_url}
+                    <Image
+                      src={displayImageUrl}
                       alt="Symptom photo attached to health report"
-                      className="max-h-72 rounded-md object-contain border border-slate-200 dark:border-slate-700 shadow-xs"
+                      width={640}
+                      height={480}
+                      className="max-h-72 w-auto rounded-md object-contain border border-slate-200 dark:border-slate-700 shadow-xs"
                       loading="lazy"
                     />
                   </div>

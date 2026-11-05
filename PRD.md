@@ -1,52 +1,71 @@
 # Product Requirements Document (PRD): MedAI
 
-## 1. Product Vision & Scope
-MedAI is a full-stack Next.js web application designed to act as an intelligent, multimodal symptom triage assistant. It aims to bridge the gap between vague internet symptom searches and formal medical consultations by utilizing a multi-turn LLM interrogation loop, enriched with the user's personalized health metrics, FDA drug interaction data, and localized clinic mapping.
+## 1. Project Overview
+**MedAI** is an AI-powered, full-stack medical symptom triage web application. It helps users organize and understand their symptoms before consulting a certified healthcare professional. It features an adaptive multi-turn triage chat loop, profile-aware context integration, nearby clinic mapping, and clean print-ready report generation.
 
-**Disclaimer:** MedAI is purely informational and demonstrates software engineering patterns for AI-integrated healthcare tooling. It is strictly not a clinical diagnostic tool.
+**Goal:** Build a robust, defensible, production-grade application that combines low-latency LLM inference (Groq with Google Gemini fallback) with strict security, structured output, and privacy safeguards.
+
+---
 
 ## 2. Target Audience
-1. **End-Users:** Individuals seeking preliminary structuring of their health symptoms, OTC guidance, and nearby medical facility routing before contacting a physician.
-2. **Technical Reviewers:** Engineering managers and recruiters evaluating portfolio architecture, API orchestration, and full-stack implementation capabilities.
+- Individuals seeking preliminary structured guidance and preparation before visiting a doctor.
+- Non-English or multilingual users needing voice dictation and translation (supports English, Hindi, Spanish, and French).
+- Software engineers and evaluators assessing full-stack AI system architecture, safety boundaries, and code quality.
 
-## 3. Core User Workflows
+---
 
-### 3.1 Authentication & Health Profiling
-* **Flow:** Users authenticate via Supabase Auth (Email/Password). Upon first login, a Postgres trigger generates a `profiles` row.
-* **Health Profile:** Users configure persistent demographics, allergies, medications, and biological/menstrual cycle data. This context is securely fetched via Next.js Server Actions and injected into all subsequent AI sessions.
+## 3. Tech Stack & Dependencies
+* **Frontend:** Next.js 16.4.3 (App Router, Server Actions, `proxy.ts` network boundary), React 19.2.4, Tailwind CSS v4
+* **Backend:** Next.js Server Actions with Supabase SSR client
+* **Database & Auth:** Supabase PostgreSQL with strict Row Level Security (RLS) policies, Supabase Auth (Email + Password)
+* **AI Engine:** Groq API SDK (`groq-sdk`) using `openai/gpt-oss-120b` (default, configurable via `GROQ_MODEL_ID`) with Google Gemini REST API fallback for high availability and multimodal vision
+* **Mapping:** `react-map-gl` and `maplibre-gl` with MapTiler / OpenStreetMap tiles (lazy-loaded via `next/dynamic` to reduce initial JavaScript payload)
+* **UI Utilities:** `lucide-react` for SVG icons, `next-themes` for dark mode support
+* **Image Processing:** Base64 encoding with planned client-side optimization
 
-### 3.2 Multimodal Symptom Intake & Safety Screening
-* **Inputs:** Users provide symptoms via standard text input, Web Speech API dictation (supporting English, Hindi, Spanish, French), or image upload (e.g., rashes, swelling).
-* **Preprocessing:** Images undergo client-side HTML5 Canvas compression (WebP) to strip sensitive EXIF GPS metadata and minimize payload size.
-* **Deterministic Safety Check:** Before invoking the LLM, input is screened against a regex-based Emergency Pattern Matcher (e.g., stroke indicators, chest pain). Matches instantly bypass the triage loop to display an emergency warning.
+---
 
-### 3.3 The Agentic Triage Loop
-* **Mechanism:** Instead of a one-shot guess, the application POSTs to `/api/triage`. The AI (Groq Llama 3) responds with a strictly structured JSON object containing a `confidenceScore` and a `next_question`.
-* **Termination:** The UI maintains the conversation state. The loop terminates when the LLM reports a confidence score of ≥85% OR a hard cap of 3 follow-up turns is reached.
-* **Context Injection:** The system prompt dynamically includes OpenFDA API warnings for the user's logged medications, alongside calculated menstrual phases (using luteal-phase anchoring).
+## 4. Legal & Compliance Focus
+> **Strict Medical Disclaimer:** Hardcoded disclaimers appear across the UI, the assessment loop, and the print layout:  
+> *"MedAI is an informational triage support tool. It is NOT a substitute for professional clinical medical advice, emergency care, diagnosis, or treatment. Always consult a licensed healthcare professional."*
 
-### 3.4 Report Generation & Map Routing
-* **Final Synthesis:** A backend Server Action (`analyzeSymptoms`) triggers a final LLM pass to generate a structured report (`condition`, `explanation`, `isEmergency`, `otcMedicineAdvice`). 
-* **Persistence:** The JSON report is inserted into Supabase `reports` protected by Row Level Security (RLS).
-* **Clinic Locator:** The report view lazy-loads a `MapLibre GL` WebGL map. It fetches real-time healthcare nodes from the OpenStreetMap Overpass API based on the user's HTML5 Geolocation and provides OSRM road routing.
+---
 
-## 4. Technical Architecture
+## 5. Core Application Flow
+1. **Authentication:** Users sign up or log in using Supabase Auth (Email + Password) and manage their health profile (Age, Biological Sex, Cycle length, Allergies, Chronic History, Current Medications).
+2. **Symptom Input:**
+   - Users describe symptoms via text or the **Web Speech API Dictation** microphone.
+   - Users can optionally attach a reference photo of an affected area.
+3. **Adaptive Triage Loop:**
+   - The primary AI engine evaluates the reported symptoms against patient profile background.
+   - The AI conducts an adaptive loop, asking up to 3 clarifying follow-up questions to narrow down diagnostic context before finalizing.
+4. **Final Report Generation:**
+   - When clarification is sufficient (target certainty ≥ 85% or 3 turns reached), the system transitions to report compilation.
+   - The UI generates a structured layout displaying: Probable Condition, Explanation, Safety/OTC guidance, and Recommended Next Steps.
+5. **Post-Triage Execution:**
+   - The user can view an interactive MapLibre map of nearby medical facilities sourced from OpenStreetMap.
+   - The user can export a clean PDF record using browser print-to-PDF or share their report link if toggled public.
 
-* **Frontend:** Next.js 16 App Router, React 19, Tailwind CSS v4.
-* **Backend:** Next.js Server Actions for secure database mutations; API Route Handlers for streaming AI interactions.
-* **Database:** Supabase PostgreSQL with strict RLS (reports restricted to `auth.uid() = user_id` unless explicitly toggled `is_public = true`).
-* **AI Orchestration:**
-  * **Text Modality:** Groq API (`llama-3.3-70b-versatile`) optimized for low-latency NLP.
-  * **Vision Modality:** Fallback to Google Gemini API (`gemini-2.0-flash`) for handling Base64 image payloads.
+---
 
-## 5. Security & Privacy Constraints
+## 6. Feature Breakdown
 
-1. **Row Level Security (RLS):** All Postgres tables and Storage buckets must enforce access policies at the database layer. Symptom images are stored in private buckets and accessed via signed URLs.
-2. **Metadata Sanitization:** All client-uploaded media must be stripped of EXIF headers to prevent unintentional leakage of user location data to third-party LLM APIs.
-3. **Rate Limiting:** AI endpoints must be protected against abuse to prevent API quota exhaustion.
-4. **Data Minimization:** Only context strictly relevant to the current symptom profile is passed to the LLM.
+### Core Architecture
+- [x] Secure authentication with Supabase (Email + Password)
+- [x] Multimodal photo upload support with vision fallback
+- [x] Structured JSON AI triage responses
+- [x] Condition Report UI with emergency notification banner
+- [x] Prominent medical disclaimers on every view
 
-## 6. Success Metrics (System Health)
-* **Triage Latency:** Groq API text turnarounds must average < 800ms.
-* **Payload Efficiency:** Client-side image compression must reduce raw smartphone photo payloads (typically 4-8MB) to under 500KB before transmission.
-* **Map Initialization:** Lazy-loading MapLibre GL must keep the initial application JS bundle below Next.js recommended thresholds.
+### Key Capabilities
+- [x] **Dynamic Menstrual Tracker:** Algorithms compute menstrual cycle phases based on user-entered cycle data to contextualize abdominal or fatigue symptoms.
+- [x] **Medication Context:** Patient medication history is incorporated into inference prompts to check for potential contraindications.
+- [x] **Performance Optimization:** `next/dynamic` code splitting for heavy MapLibre GL bundles.
+- [x] **Nearby Clinic Mapping:** MapLibre GL maps real nearby medical facilities from OpenStreetMap with routing estimates.
+- [x] **Print-Ready Health Reports:** Print-optimized CSS styling for clean PDF export via native browser print.
+
+### Polish & UX
+- [x] Web Speech API voice dictation
+- [x] Multilingual interface (English, Hindi, Spanish, French)
+- [x] Dashboard report history with owner-only access controls
+- [x] Dark / Light mode toggling with `next-themes`

@@ -3,22 +3,34 @@ import { redirect } from 'next/navigation'
 import { ShieldAlert } from 'lucide-react'
 import { DashboardClient } from './DashboardClient'
 
+const PAGE_SIZE = 10
+
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; page?: string }>
 }) {
-  const { error } = await searchParams
+  const { error, page: rawPage } = await searchParams
+  const currentPage = Math.max(1, parseInt(rawPage || '1', 10))
+  const from = (currentPage - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
 
-  const { data: reports } = await supabase
+  // Performance Optimization: Column Projection & Range-Based Pagination
+  // Projections avoid transferring full OTC strings and huge diagnosis objects across all historical reports
+  const { data: reports, count } = await supabase
     .from('reports')
-    .select('*')
+    .select('id, created_at, is_emergency, symptom_description, ai_response', { count: 'exact' })
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
+    .range(from, to)
+
+  const totalCount = count || 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -38,6 +50,9 @@ export default async function DashboardPage({
         reports={reports || []}
         userEmail={user.email || null}
         userName={profile?.full_name || null}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalReports={totalCount}
       />
     </div>
   )

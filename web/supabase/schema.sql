@@ -21,7 +21,8 @@ create policy "Users can insert their own profile." on profiles
   for insert with check (auth.uid() = id);
 
 create policy "Users can update own profile." on profiles
-  for update using (auth.uid() = id);
+  for update using (auth.uid() = id)
+  with check (auth.uid() = id);
 
 -- Set up a trigger to auto-create profile on signup
 create function public.handle_new_user()
@@ -62,28 +63,66 @@ create policy "Users can insert their own reports." on reports
   for insert with check (auth.uid() = user_id);
 
 create policy "Users can update their own reports." on reports
-  for update using (auth.uid() = user_id);
+  for update using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 create policy "Users can delete their own reports." on reports
   for delete using (auth.uid() = user_id);
 
--- Create storage bucket for symptoms (idempotent)
+-- Trigger to prevent client tampering with immutable columns
+create or replace function public.prevent_report_immutable_columns_update()
+returns trigger as $$
+begin
+  if new.user_id <> old.user_id then
+    raise exception 'Security violation: user_id is immutable on reports.';
+  end if;
+  if new.created_at <> old.created_at then
+    raise exception 'Security violation: created_at is immutable on reports.';
+  end if;
+  if new.ai_response is distinct from old.ai_response then
+    raise exception 'Security violation: ai_response is immutable once generated.';
+  end if;
+  if new.is_emergency is distinct from old.is_emergency then
+    raise exception 'Security violation: is_emergency is immutable once generated.';
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists trg_prevent_report_tampering on public.reports;
+create trigger trg_prevent_report_tampering
+  before update on public.reports
+  for each row execute function public.prevent_report_immutable_columns_update();
+
+-- Create private storage bucket for symptoms (idempotent)
 insert into storage.buckets (id, name, public) 
-values ('symptoms', 'symptoms', true)
-on conflict (id) do nothing;
+values ('symptoms', 'symptoms', false)
+on conflict (id) do update set public = false;
 
--- Enable RLS for storage
-create policy "Authenticated users can upload symptoms"
+-- Enable RLS for storage with strict per-user folder scoping (<auth.uid()>/...)
+create policy "Users can upload own symptom photos"
   on storage.objects for insert
-  with check (bucket_id = 'symptoms' and auth.role() = 'authenticated');
+  to authenticated
+  with check (
+    bucket_id = 'symptoms'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
 
-create policy "Images are viewable by everyone"
+create policy "Users can view own symptom photos"
   on storage.objects for select
-  using (bucket_id = 'symptoms');
+  to authenticated
+  using (
+    bucket_id = 'symptoms'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
 
-create policy "Authenticated users can delete symptom photos"
+create policy "Users can delete own symptom photos"
   on storage.objects for delete
-  using (bucket_id = 'symptoms' and auth.role() = 'authenticated');
+  to authenticated
+  using (
+    bucket_id = 'symptoms'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
 
 -- ====== Version 2 Schema Additions ======
 alter table public.reports
@@ -117,3 +156,88 @@ alter table public.profiles
 alter table public.reports
   drop constraint if exists reports_user_id_fkey,
   add constraint reports_user_id_fkey foreign key (user_id) references auth.users(id) on delete cascade;
+
+-- ====== Version 3 Schema Additions (Server-Owned Triage & Audit Logging) ======
+create table if not exists public.triage_sessions (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  status text default 'active' check (status in ('active', 'completed', 'emergency', 'abandoned')) not null,
+  messages jsonb default '[]'::jsonb not null,
+  extracted_slots jsonb default '{}'::jsonb not null,
+  turn_count integer default 0 not null,
+  max_turns integer default 3 not null,
+  language text default 'en' not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.triage_sessions enable row level security;
+
+-- Owner-only policies for triage_sessions
+drop policy if exists "Users can view own triage sessions" on public.triage_sessions;
+create policy "Users can view own triage sessions"
+  on public.triage_sessions for select
+  to authenticated
+  using (auth.uid() = user_id);
+
+drop policy if exists "Users can create own triage sessions" on public.triage_sessions;
+create policy "Users can create own triage sessions"
+  on public.triage_sessions for insert
+  to authenticated
+  with check (auth.uid() = user_id);
+
+drop policy if exists "Users can update own triage sessions" on public.triage_sessions;
+create policy "Users can update own triage sessions"
+  on public.triage_sessions for update
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+drop policy if exists "Users can delete own triage sessions" on public.triage_sessions;
+create policy "Users can delete own triage sessions"
+  on public.triage_sessions for delete
+  to authenticated
+  using (auth.uid() = user_id);
+
+create index if not exists idx_triage_sessions_user_id on public.triage_sessions(user_id);
+create index if not exists idx_triage_sessions_status on public.triage_sessions(status);
+create index if not exists idx_triage_sessions_created_at on public.triage_sessions(created_at desc);
+
+create table if not exists public.ai_calls (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete set null,
+  session_id uuid references public.triage_sessions(id) on delete set null,
+  provider text not null,
+  model text not null,
+  latency_ms integer not null,
+  tokens_prompt integer default 0,
+  tokens_completion integer default 0,
+  status text not null check (status in ('success', 'error', 'timeout', 'fallback')),
+  error_code text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.ai_calls enable row level security;
+
+drop policy if exists "Users can view own AI call logs" on public.ai_calls;
+create policy "Users can view own AI call logs"
+  on public.ai_calls for select
+  to authenticated
+  using (auth.uid() = user_id);
+
+drop policy if exists "Authenticated users can insert AI call logs" on public.ai_calls;
+create policy "Authenticated users can insert AI call logs"
+  on public.ai_calls for insert
+  to authenticated
+  with check (auth.uid() = user_id or auth.uid() is null);
+
+create index if not exists idx_ai_calls_user_id on public.ai_calls(user_id);
+create index if not exists idx_ai_calls_created_at on public.ai_calls(created_at desc);
+create index if not exists idx_ai_calls_session_id on public.ai_calls(session_id);
+
+alter table public.reports
+  add column if not exists session_id uuid references public.triage_sessions(id) on delete set null;
+
+create unique index if not exists idx_reports_idempotent_session
+  on public.reports(session_id)
+  where session_id is not null;
